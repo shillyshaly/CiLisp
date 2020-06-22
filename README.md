@@ -1,6 +1,6 @@
 # CI LISP
 
-Read **everything in this file** before opening the instructions for the individual tasks. You are responsible for understanding the grading structure before starting, and you will likely miss **tons of points** in documentation if you do not.
+Read **everything in this file** before opening the instructions for the individual tasks. You are responsible for understanding the grading structure before starting, and you will likely miss **tons of points** in progress checks if you do not.
 
 ## Summary
 
@@ -10,9 +10,9 @@ The project is divided into tasks, which should be done sequentially and are lis
 
 ## Progress Checks
 
-We will do 10-minute one-on-one progress checks on the  dates listed below. The expected amount of progress in the project is listed for each checkup. Students making insufficient progress on a given progress check can be docked up to 12.5% on the project; students who miss progress checks will be docked the full 12.5%. Up to half of the lost points on a progress check can be recovered on the following progress check by catching back up. That is, you will be graded from -12.5 to 0 on each progress check, and the progress check grades will be added into your final grade.
+We will do 10-minute one-on-one progress checks on the  dates listed below. The expected amount of progress in the project is listed for each progress check. Students making insufficient progress on a given progress check can be docked up to 12.5% on the project; students who miss progress checks will be docked the full 12.5%. Up to half of the lost points on a progress check can be recovered on the following progress check by catching back up. 
 
-Points will not be docked on the final progress check; anything that is not complete at the final check will be reflected in the project grade itself.
+You will be graded from -12.5 to 0 on each progress check, and the progress check grades will be added into your final grade. Points will not be docked on the final progress check unless it is missed; anything that is not complete at the final check will be reflected in the project grade itself.
 
 You will not necessarily be docked any points for not reaching the expected progress goals. If the expected tasks are near completion **and** you come prepared with questions and/or an organized plan detailing what you have left to do to reach the progress goals, you may receive full credit.
 
@@ -33,8 +33,7 @@ You final submission must come with:
 * sample inputs demonstrating and testing all implemented functionality.
 * a list of any known bugs or issues, and your theories about their causes.
 
-These should all be in your project github repository before the final progress check, and you should come to said progress check prepared to discuss these materials and demonstrate a run with your sample inputs while screen sharing. The inputs should be in a file and ready to roll; **do not** come to a progress check expecting to type in inputs by hand while we watch.
-
+These should all be in your project github repository before the final progress check, and you should come to said progress check prepared to discuss these materials and demonstrate a run with your sample inputs while screen sharing. The inputs should be in a file and ready to roll; **do not** come to a progress check expecting to type in inputs by hand while we watch, expecting us to type in inputs by hand, or expecting us to come up with test inputs. Come prepared.
 
 ## General Comments
 
@@ -51,13 +50,13 @@ It is a good idea to sweep each task 2-3 times after completion making it cleane
 
 ## <a name="instructions"></a> Instructions
 
-Each task below task will expand the grammar; your job is to expand the scanner, parser, data structures, parsing methods, and evaluation methods to meet the new requirements. The handout will build and run, but isn't capable of actually doing anything
+Each task below task will expand the grammar; your job is to expand the lexer, parser, data structures, parsing methods, and evaluation methods to meet the new requirements. The handout will build and run, but isn't capable of actually doing anything other than crashing or quitting.
 
 Click the hyperlinked task names to open their instructions.
 
 [TASK 1](./instructions/task_1.md) : Tokenization, Parsing and Evaluation of arithmetics in Cambridge Polish Notation
 
-[TASK 2](./instructions/task_2.md) : Symbol definition and evaluation.
+[TASK 2](./instructions/task_2.md) : Symbol definition and evaluation
 
 [TASK 3](./instructions/task_3.md) : Typecasting
 
