@@ -6,7 +6,7 @@ Read **everything in this file** before opening the instructions for the individ
 
 Through the course of this project, you will implement an interpreter for *CI LISP*, a *Lisp*-like language.
 
-The project is divided into tasks, which should be done sequentially and are listed in the [TASKS](#tasks) section below.
+The project is divided into tasks, which should be done sequentially and are listed in the [Instructions](#instructions) section below.
 
 ## Progress Checks
 
