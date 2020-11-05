@@ -9,6 +9,8 @@
 
 digit [0-9]
 int [+-]?{digit}+
+float [+-]?(digit)+\.(digit)*
+func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
 
 %%
 
@@ -16,6 +18,28 @@ int [+-]?{digit}+
     llog(INT);
     yylval.dval = strtod(yytext, NULL);
     return INT;
+}
+
+{float} {
+    llog(INT);
+    yylval.dval = strtod(yytext, NULL);
+    return DOUBLE;
+}
+
+{func} {
+    llog(INT);
+    yylval.dval = strtod(yytext);
+    return FUNC;
+}
+
+"(" {
+    llog(LPAREN);
+    return LPAREN;
+}
+
+")" {
+    llog(LPAREN);
+    return RPAREN;
 }
 
 [\n] {

@@ -1,3 +1,8 @@
+/**
+* Name: Jamie Hernandez
+* Lab: ciLisp Lab
+* Date: 11/4/2020
+**/
 #include "cilisp.h"
 
 #define RED             "\033[31m"
@@ -56,8 +61,21 @@ FUNC_TYPE resolveFunc(char *funcName)
             "neg",
             "abs",
             "add",
-            // TODO complete the array
+            // TODO complete the array - DONE
             // the empty string below must remain the last element
+            "sub",
+            "mult",
+            "div",
+            "remainder",
+            "exp",
+            "exp2",
+            "pow",
+            "log",
+            "sqrt",
+            "cbrt",
+            "hypot",
+            "max",
+            "min",
             ""
     };
     int i = 0;

@@ -1,3 +1,8 @@
+/**
+* Name: Jamie Hernandez
+* Lab: ciLisp Lab
+* Date: 11/4/2020
+**/
 #ifndef __cilisp_h_
 #define __cilisp_h_
 
@@ -29,7 +34,20 @@ typedef enum func_type {
     NEG_FUNC,
     ABS_FUNC,
     ADD_FUNC,
-    // TODO complete the enum
+    // TODO complete the enum - DONE
+    SUB_FUNC,
+    MULT_FUNC,
+    DIV_FUNC,
+    REMAINDER_FUNC,
+    EXP_FUNC,
+    EXP2_FUNC,
+    POW_FUNC,
+    LOG_FUNC,
+    SQRT_FUNC,
+    CBRT_FUNC,
+    HYPOT_FUNC,
+    MAX_FUNC,
+    MIN_FUNC,
     CUSTOM_FUNC
 } FUNC_TYPE;
 

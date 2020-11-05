@@ -7,11 +7,11 @@
     double dval;
     int ival;
     struct ast_node *astNode;
-};
+}
 
 %token <ival> FUNC
-%token <dval> INT
-%token QUIT EOL EOFT
+%token <dval> INT DOUBLE
+%token QUIT EOL EOFT LPAREN RPAREN
 
 %type <astNode> s_expr
 
