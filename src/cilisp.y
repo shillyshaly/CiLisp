@@ -13,7 +13,7 @@
 %token <dval> INT DOUBLE
 %token QUIT EOL EOFT LPAREN RPAREN
 
-%type <astNode> s_expr
+%type <astNode> s_expr s_expr_section s_expr_list number
 
 %%
 
@@ -45,7 +45,15 @@ program:
 
 
 s_expr:
-    QUIT {
+    f_expr {
+    	ylog(s_expr, f_expr);
+    	$$ = $1;
+    }
+    | number {
+    	ylog(s_expr, number);
+    	$$ =$1;
+    }
+    | QUIT {
         ylog(s_expr, QUIT);
         exit(EXIT_SUCCESS);
     }
@@ -55,5 +63,43 @@ s_expr:
         $$ = NULL;
     };
 
+
+f_expr:
+    LPAREN FUNC s_expr_section RPAREN {
+    	ylog(f_expr, LPAREN FUNC s_expr_section RPAREN);
+    	$$ = createFunctionNode($2, $3);
+    };
+
+
+s_expr_section:
+    s_expr_list {
+    	ylog(s_expr_section, s_expr_list);
+    	$$ = $1;
+    }
+    | {
+
+    };
+
+
+s_expr_list:
+    s_expr {
+    	ylog(s_expr_list, s_expr);
+    	$$ = addExpressionToList($1, NULL);
+    }
+    | s_expr s_expr_list {
+    	ylog(s_expr_list, s_expr s_expr_list);
+    	$$ = addExpressionToList($1, $2);
+    };
+
+
+number:
+    INT {
+    	ylog(number, INT);
+    	$$ = createFunctionNode(INT_TYPE, $1);
+    }
+    | DOUBLE {
+    	ylog(number, DOUBLE);
+    	$$ = createFunctionNode(DOUBLE_TYPE, $1);
+    };
 %%
 

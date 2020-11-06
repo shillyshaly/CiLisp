@@ -21,15 +21,20 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"
 }
 
 {float} {
-    llog(INT);
+    llog(DOUBLE);
     yylval.dval = strtod(yytext, NULL);
     return DOUBLE;
 }
 
 {func} {
-    llog(INT);
+    llog(FUNC);
     yylval.dval = strtod(yytext);
     return FUNC;
+}
+
+quit {
+    llog(QUIT);
+    return QUIT;
 }
 
 "(" {
