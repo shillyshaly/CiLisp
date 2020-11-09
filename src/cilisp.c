@@ -16,12 +16,11 @@
 // This is basically printf, but red, with "\nERROR: " prepended, "\n" appended,
 // and an "exit(1);" at the end to crash the program.
 // It's called "yyerror" instead of "error" so the parser will use it for errors too.
-void yyerror(char *format, ...)
-{
+void yyerror(char *format, ...) {
     char buffer[256];
     va_list args;
     va_start (args, format);
-    vsnprintf (buffer, 255, format, args);
+    vsnprintf(buffer, 255, format, args);
 
     printf(RED "\nERROR: %s\nExiting...\n" RESET_COLOR, buffer);
     fflush(stdout);
@@ -40,12 +39,11 @@ void yyerror(char *format, ...)
 //      invalid arguments, let them know and return NAN
 //      many more uses to be added as we progress...
 // This is basically printf, but red, and with "\nWARNING: " prepended and "\n" appended.
-void warning(char *format, ...)
-{
+void warning(char *format, ...) {
     char buffer[256];
     va_list args;
     va_start (args, format);
-    vsnprintf (buffer, 255, format, args);
+    vsnprintf(buffer, 255, format, args);
 
     printf(RED "WARNING: %s\n" RESET_COLOR, buffer);
     fflush(stdout);
@@ -53,8 +51,7 @@ void warning(char *format, ...)
     va_end (args);
 }
 
-FUNC_TYPE resolveFunc(char *funcName)
-{
+FUNC_TYPE resolveFunc(char *funcName) {
     // Array of string values for function names.
     // Must be in sync with members of the FUNC_TYPE enum in order for resolveFunc to work.
     // For example, funcNames[NEG_FUNC] should be "neg"
@@ -80,10 +77,8 @@ FUNC_TYPE resolveFunc(char *funcName)
             ""
     };
     int i = 0;
-    while (funcNames[i][0] != '\0')
-    {
-        if (strcmp(funcNames[i], funcName) == 0)
-        {
+    while (funcNames[i][0] != '\0') {
+        if (strcmp(funcNames[i], funcName) == 0) {
             return i;
         }
         i++;
@@ -91,14 +86,12 @@ FUNC_TYPE resolveFunc(char *funcName)
     return CUSTOM_FUNC;
 }
 
-AST_NODE *createNumberNode(double value, NUM_TYPE type)
-{
+AST_NODE *createNumberNode(double value, NUM_TYPE type) {
     AST_NODE *node;
     size_t nodeSize;
 
     nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-    {
+    if ((node = calloc(nodeSize, 1)) == NULL) {
         yyerror("Memory allocation failed!");
         exit(1);
     }
@@ -114,14 +107,12 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
 }
 
 
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList)
-{
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
     AST_NODE *node;
     size_t nodeSize;
 
     nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-    {
+    if ((node = calloc(nodeSize, 1)) == NULL) {
         yyerror("Memory allocation failed!");
         exit(1);
     }
@@ -134,9 +125,29 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList)
 
     return node;
 }
+
+//TODO - fixxxxx mmmeeeeeee
+AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
+    AST_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+    node->data = newExpr->data;
+    node->data.function.opList = newExpr;
+    node->next = exprList;
+
+    return node;
+}
+
 ///
-//list of functions
+///  list of functions
 ///
+
+//unary fucntions
 RET_VAL *evalNeg(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = -op->data.number.value;
@@ -145,13 +156,51 @@ RET_VAL *evalNeg(AST_NODE *op) {
 }
 
 RET_VAL *evalAbs(AST_NODE *op) {
-    // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = fabs(op->data.number.value);
     result->type = (NUM_TYPE) op->type;
     return result;
 }
 
+RET_VAL *evalExp(AST_NODE *op) {
+    RET_VAL *result = malloc(sizeof(RET_VAL));
+    result->value = exp(op->data.number.value);
+    result->type = op->data.number.type;
+    return result;
+}
+
+RET_VAL *evalExp2(AST_NODE *op) {
+    RET_VAL *result = malloc(sizeof(RET_VAL));
+    result->value = exp(op->data.number.value);
+    result->type = op->data.number.type;
+    return result;
+}
+
+RET_VAL *evalLog(AST_NODE *op) {
+    // TODO
+    RET_VAL *result = malloc(sizeof(RET_VAL));
+    result->value = log(op->data.number.value);
+    result->type = op->data.number.type;
+    return result;
+}
+
+RET_VAL *evalSqrt(AST_NODE *op) {
+    // TODO
+    RET_VAL *result = malloc(sizeof(RET_VAL));
+    result->value = sqrt(op->data.number.value);
+    result->type = op->data.number.type;
+    return result;
+}
+
+RET_VAL *evalCbrt(AST_NODE *op) {
+    // TODO
+    RET_VAL *result = malloc(sizeof(RET_VAL));
+    result->value = log(op->data.number.value);
+    result->type = op->data.number.type;
+    return result;
+}
+
+//binary functions
 RET_VAL *evalAdd(AST_NODE *op1, AST_NODE *op2) {
     if (op2 == NULL) {
         yyerror("Too few arguments in addition.");
@@ -164,6 +213,7 @@ RET_VAL *evalAdd(AST_NODE *op1, AST_NODE *op2) {
     }
     return result;
 }
+
 RET_VAL *evalSub(AST_NODE *op1, AST_NODE *op2) {
     // TODO
     if (op2 == NULL) {
@@ -220,63 +270,28 @@ RET_VAL *evalRem(AST_NODE *op1, AST_NODE *op2) {
     return result;
 }
 
-RET_VAL *evalExp(AST_NODE *op) {
-    // TODO
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = exp(op->data.number.value);
-    result->type = op->type;
-    return result;
-}
-RET_VAL *evalExp2(AST_NODE *op) {
-    // TODO
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = exp(op->data.number.value);
-    result->type = op->type;
-    return result;
-}
-
 RET_VAL *evalPow(AST_NODE *op) {
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = log(op->data.number.value);
-    result->type = op->type;
+    result->type = op->data.number.type;
     return result;
 }
 
-RET_VAL *evalLog(AST_NODE *op) {
-    // TODO
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = log(op->data.number.value);
-    result->type = op->type;
-    return result;
-}
-
-RET_VAL *evalSqrt(AST_NODE *op) {
-    // TODO
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = sqrt(op->data.number.value);
-    result->type = op->type;
-    return result;
-}
-RET_VAL *evalCbrt(AST_NODE *op) {
-    // TODO
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = log(op->data.number.value);
-    result->type = op->type;
-    return result;
-}
-
+//n-ary functions
 RET_VAL *evalHypot(AST_NODE *op) {
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = sqrt(op->data.number.value);
-    result->type = op->type;
+    result->type = op->data.number.type;
     return result;
-}RET_VAL *evalMax(AST_NODE *op) {
+}
+
+RET_VAL *evalMax(AST_NODE *op) {
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = log(op->data.number.value);
-    result->type = op->type;
+    result->type = op->data.number.type;
     return result;
 }
 
@@ -284,17 +299,16 @@ RET_VAL *evalMin(AST_NODE *op) {
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = sqrt(op->data.number.value);
-    result->type = op->type;
+    result->type = op->data.number.type;
     return result;
 }
+
 ///
-//end list of functions
+///  end list of functions
 ///
 
-RET_VAL evalFuncNode(AST_NODE *node)
-{
-    if (!node)
-    {
+RET_VAL evalFuncNode(AST_NODE *node) {
+    if (!node) {
         yyerror("NULL ast node passed into evalFuncNode!");
         return NAN_RET_VAL; // unreachable but kills a clang-tidy warning
     }
@@ -308,6 +322,7 @@ RET_VAL evalFuncNode(AST_NODE *node)
             evalNeg(node->data.function.opList);
             break;
         case ABS_FUNC:
+            evalAbs(node->data.function.opList);
             break;
         case ADD_FUNC:
             break;
@@ -342,10 +357,8 @@ RET_VAL evalFuncNode(AST_NODE *node)
     }
 }
 
-RET_VAL evalNumNode(AST_NODE *node)
-{
-    if (!node)
-    {
+RET_VAL evalNumNode(AST_NODE *node) {
+    if (!node) {
         yyerror("NULL ast node passed into evalNumNode!");
         return NAN_RET_VAL;
     }
@@ -358,10 +371,8 @@ RET_VAL evalNumNode(AST_NODE *node)
     return NAN_RET_VAL;
 }
 
-RET_VAL eval(AST_NODE *node)
-{
-    if (!node)
-    {
+RET_VAL eval(AST_NODE *node) {
+    if (!node) {
         yyerror("NULL ast node passed into eval!");
         return NAN_RET_VAL;
     }
@@ -380,10 +391,8 @@ RET_VAL eval(AST_NODE *node)
 }
 
 // prints the type and value of a RET_VAL
-void printRetVal(RET_VAL val)
-{
-    switch (val.type)
-    {
+void printRetVal(RET_VAL val) {
+    switch (val.type) {
         case INT_TYPE:
             printf("Integer : %.lf\n", val.value);
             break;
@@ -397,11 +406,8 @@ void printRetVal(RET_VAL val)
 }
 
 
-
-void freeNode(AST_NODE *node)
-{
-    if (!node)
-    {
+void freeNode(AST_NODE *node) {
+    if (!node) {
         return;
     }
 

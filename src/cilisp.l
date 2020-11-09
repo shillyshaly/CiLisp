@@ -3,14 +3,14 @@
 %option nounput
 
 %{
-    #include "ciLisp.h"
+    #include "cilisp.h"
     #define llog(token) {fprintf(flex_bison_log_file, "LEX: %s \"%s\"\n", #token, yytext); fflush(stdout);}
 %}
 
-digit [0-9]
-int [+-]?{digit}+
-double [+-]?(digit)+\.(digit)*
-func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
+digit   [0-9]
+int     [+-]?{digit}+
+double  [+-]?({digit}*\.{digit}+)|({digit}+\.{digit}*)
+func    "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
 
 %%
 
@@ -69,7 +69,7 @@ quit {
 // Edit at your own risk.
 
 #include <stdio.h>
-#include "ciLisp.h"
+#include "cilisp.h"
 #include "yyreadprint.c"
 
 int main(int argc, char **argv)

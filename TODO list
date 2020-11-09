@@ -1,0 +1,17 @@
+CHECK LIST:
+figure out why tokens aren't get passed
+create the math functions
+finish "evalFunctionNode"
+
+
+QUESTIONS:
+do we have to create things like push and pop functions?
+
+
+BUGS:
+-not passing arguments through the program
+    I'm pretty sure it's not printing because i'm not pushing anything onto a stack for processing
+-adding to expression list not completed properly
+    I'm not sure if i have to create push/pop style functions or if i can just do it all in the function
+    call itself.  prop the function call???
+

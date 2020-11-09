@@ -1,6 +1,8 @@
 %{
-    #include "ciLisp.h"
+    #include "cilisp.h"
     #define ylog(r, p) {fprintf(flex_bison_log_file, "BISON: %s ::= %s \n", #r, #p); fflush(stdout);}
+    int yylex();
+    void yyerror(char*, ...);
 %}
 
 %union {
@@ -84,13 +86,11 @@ s_expr_section:
 s_expr_list:
     s_expr {
     	ylog(s_expr_list, s_expr);
-//    	$$ = addExpressionToList($1, NULL);
-	$$ = $1;
+    	$$ = addExpressionToList($1, NULL);
     }
     | s_expr s_expr_list {
     	ylog(s_expr_list, s_expr s_expr_list);
-//    	$$ = addExpressionToList($1, $2);
-	$$ = $1;
+    	$$ = addExpressionToList($1, $2);
     };
 
 
