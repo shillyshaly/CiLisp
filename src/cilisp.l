@@ -9,7 +9,7 @@
 
 digit [0-9]
 int [+-]?{digit}+
-float [+-]?(digit)+\.(digit)*
+double [+-]?(digit)+\.(digit)*
 func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
 
 %%
@@ -20,7 +20,7 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"
     return INT;
 }
 
-{float} {
+{double} {
     llog(DOUBLE);
     yylval.dval = strtod(yytext, NULL);
     return DOUBLE;
@@ -28,7 +28,7 @@ func "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"
 
 {func} {
     llog(FUNC);
-    yylval.dval = strtod(yytext);
+    yylval.ival = resolveFunc(yytext);
     return FUNC;
 }
 
@@ -43,7 +43,7 @@ quit {
 }
 
 ")" {
-    llog(LPAREN);
+    llog(RPAREN);
     return RPAREN;
 }
 
@@ -57,7 +57,7 @@ quit {
     return EOFT;
     }
 
-[ \t\r] ; /* skip whitespace */
+[ \t\r] {}; /* skip whitespace */
 
 . { // anything else
     llog(INVALID);
