@@ -1,6 +1,7 @@
 CHECK LIST:
 figure out why tokens aren't get passed
-create the math functions
+finish the math functions
+    make sure to check for number of ops
 finish "evalFunctionNode"
 
 

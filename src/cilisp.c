@@ -136,6 +136,7 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
         yyerror("Memory allocation failed!");
         exit(1);
     }
+
     node->data = newExpr->data;
     node->data.function.opList = newExpr;
     node->next = exprList;
@@ -147,8 +148,13 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
 ///  list of functions
 ///
 
+//create function to test for numbers of operators???
+
 //unary fucntions
 RET_VAL *evalNeg(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = -op->data.number.value;
     result->type = op->data.number.type;
@@ -156,6 +162,9 @@ RET_VAL *evalNeg(AST_NODE *op) {
 }
 
 RET_VAL *evalAbs(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = fabs(op->data.number.value);
     result->type = (NUM_TYPE) op->type;
@@ -163,6 +172,9 @@ RET_VAL *evalAbs(AST_NODE *op) {
 }
 
 RET_VAL *evalExp(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = exp(op->data.number.value);
     result->type = op->data.number.type;
@@ -170,6 +182,9 @@ RET_VAL *evalExp(AST_NODE *op) {
 }
 
 RET_VAL *evalExp2(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = exp(op->data.number.value);
     result->type = op->data.number.type;
@@ -177,6 +192,9 @@ RET_VAL *evalExp2(AST_NODE *op) {
 }
 
 RET_VAL *evalLog(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = log(op->data.number.value);
@@ -185,6 +203,9 @@ RET_VAL *evalLog(AST_NODE *op) {
 }
 
 RET_VAL *evalSqrt(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = sqrt(op->data.number.value);
@@ -193,6 +214,9 @@ RET_VAL *evalSqrt(AST_NODE *op) {
 }
 
 RET_VAL *evalCbrt(AST_NODE *op) {
+    if (op == NULL) {
+        yyerror("Too few arguments in addition.");
+    }
     // TODO
     RET_VAL *result = malloc(sizeof(RET_VAL));
     result->value = log(op->data.number.value);
@@ -325,32 +349,46 @@ RET_VAL evalFuncNode(AST_NODE *node) {
             evalAbs(node->data.function.opList);
             break;
         case ADD_FUNC:
+            evalAdd(node->data.function.opList, node->data.function.opList->next);
             break;
         case SUB_FUNC:
+            evalSub(node->data.function.opList, node->data.function.opList->next);
             break;
         case MULT_FUNC:
+            evalMult(node->data.function.opList, node->data.function.opList->next);
             break;
         case DIV_FUNC:
+            evalDiv(node->data.function.opList, node->data.function.opList->next);
             break;
         case REMAINDER_FUNC:
+            evalRem(node->data.function.opList, node->data.function.opList->next);
             break;
         case EXP_FUNC:
+            evalExp(node->data.function.opList);
             break;
         case EXP2_FUNC:
+            evalExp2(node->data.function.opList);
             break;
         case POW_FUNC:
+            evalPow(node->data.function.opList);
             break;
         case LOG_FUNC:
+            evalLog(node->data.function.opList);
             break;
         case SQRT_FUNC:
+            evalSqrt(node->data.function.opList);
             break;
         case CBRT_FUNC:
+            evalCbrt(node->data.function.opList);
             break;
         case HYPOT_FUNC:
+            evalHypot(node->data.function.opList);
             break;
         case MAX_FUNC:
+            evalMax(node->data.function.opList);
             break;
         case MIN_FUNC:
+            evalMin(node->data.function.opList);
             break;
         case CUSTOM_FUNC:
             break;
