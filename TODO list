@@ -1,13 +1,16 @@
 CHECK LIST:
-figure out why tokens aren't get passed
-finish the math functions
+-figure out why tokens aren't get passed
+-finish the math functions
     make sure to check for number of ops
-finish "evalFunctionNode"
-finish free node function
+-finish "evalFunctionNode"-----> may be done.
+-finish free node functions
 
 
 QUESTIONS:
-do we have to create things like push and pop functions?
+-i'm missing something... nothing being passed.  The debugger shows that the numbers are being seen
+    and the function tokens are correct, but it is not being saved somewhere it seems.
+-do we have to create things like push and pop functions?
+-how are we to do remainder? what do we have to return?
 
 
 BUGS:
@@ -15,5 +18,6 @@ BUGS:
     I'm pretty sure it's not printing because i'm not pushing anything onto a stack for processing
 -adding to expression list not completed properly
     I'm not sure if i have to create push/pop style functions or if i can just do it all in the function
-    call itself.  prop the function call???
-
+    call itself.  prob the function call???
+-most functions still need work due to adding functions to list
+    most cases not handling 0 operands correctly

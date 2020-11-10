@@ -9,7 +9,7 @@
 
 digit   [0-9]
 int     [+-]?{digit}+
-double  [+-]?({digit}*\.{digit}+)|({digit}+\.{digit}*)
+double  [+-]?{digit}+\.({digit}*)
 func    "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
 
 %%
