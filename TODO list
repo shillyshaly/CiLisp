@@ -1,14 +1,15 @@
 CHECK LIST:
 -figure out why tokens aren't get passed
 -finish the math functions
-    make sure to check for number of ops
--finish "evalFunctionNode"-----> may be done.
+    have to check for number of ops
+-finish evalFunctionNode
 -finish free node functions
 
 
 QUESTIONS:
--i'm missing something... nothing being passed.  The debugger shows that the numbers are being seen
+-i'm missing something... nothing being passed.  bison shows that the numbers are being seen
     and the function tokens are correct, but it is not being saved somewhere it seems.
+    maybe the it's not taking the right path in yacc???
 -do we have to create things like push and pop functions?
 -how are we to do remainder? what do we have to return?
 

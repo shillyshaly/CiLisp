@@ -59,7 +59,7 @@ FUNC_TYPE resolveFunc(char *funcName) {
             "neg",
             "abs",
             "add",
-            // TODO complete the array - done
+            // TODO complete the array - DONE
             // the empty string below must remain the last element
             "sub",
             "mult",
@@ -86,7 +86,6 @@ FUNC_TYPE resolveFunc(char *funcName) {
     return CUSTOM_FUNC;
 }
 
-
 AST_NODE *createNumberNode(double value, NUM_TYPE type) {
     AST_NODE *node;
     size_t nodeSize;
@@ -97,7 +96,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) {
         exit(1);
     }
 
-    // TODO complete the function - ???
+    // TODO complete the function - DONE
     // Populate "node", the AST_NODE * created above with the argument data.
     // node is a generic AST_NODE, don't forget to specify it is of type AST_NODE_NODE
     node->type = NUM_NODE_TYPE;
@@ -106,7 +105,6 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) {
 
     return node;
 }
-
 
 AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
     AST_NODE *node;
@@ -118,7 +116,7 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
         exit(1);
     }
 
-    // TODO complete the function
+    // TODO complete the function - DONE
     // Populate the allocated AST_NODE *node's data
     node->type = FUNC_NODE_TYPE;
     node->data.function.func = func;
@@ -127,54 +125,33 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
     return node;
 }
 
-//TODO - fixxxxx mmmeeeeeee
 AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
-    AST_NODE *node;
-    size_t nodeSize;
+    newExpr->next = exprList;
 
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL) {
-        yyerror("Memory allocation failed!");
-        exit(1);
-    }
-    node->data = newExpr->data;
-    node->data.function.opList = newExpr;
-    node->next = exprList;
-
-
-    return node;
+    return newExpr;
 }
 
 ///
-///  list of functions
+///  list of op functions
 ///
-
-//double counter (AST_NODE *op){
-//    double count = 0.0;
-//
-//    while (op != NULL){
-//        count++;
-//        op = op->next;
-//    }
-//    return count;
-//}
 
 /*
  * unary functions
  **/
-
 RET_VAL *evalNeg(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
-//    double num = counter(op);
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
+        warning("Too few arguments in neg.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in neg.  Ignoring the rest.");
+    }
 
-    result->value = -(op->data.function.opList->data.number.value);
-    result->type = op->data.number.type;
+    *result = eval(op);
+    result->value = -(result->value);
     printf("result %f\n", result->value);
 
     return result;
@@ -184,13 +161,16 @@ RET_VAL *evalAbs(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
+        warning("Too few arguments in abs.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in abs.  Ignoring the rest.");
+    }
 
-    result->value = fabs(op->data.function.opList->data.number.value);
-    result->type = (NUM_TYPE) op->type;
+    *result = eval(op);
+    result->value = fabs(result->value);
     printf("result %f\n", result->value);
 
     return result;
@@ -200,13 +180,16 @@ RET_VAL *evalExp(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
+        warning("Too few arguments in exp.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in exp.  Ignoring the rest.");
+    }
 
-    result->value = exp(op->data.function.opList->data.number.value);
-    result->type = op->data.number.type;
+    *result = eval(op);
+    result->value = exp(result->value);
     printf("result %f\n", result->value);
 
     return result;
@@ -216,22 +199,16 @@ RET_VAL *evalExp2(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op->next != NULL){
-        warning("Too many arguments in addition.");
+        warning("Too few arguments in exp2.");
         *result = NAN_RET_VAL;
         return result;
     }
-
-    if (op->data.function.opList->data.number.value < 0){
-        result->type = DOUBLE_TYPE;
-    }else {
-        result->type = op->data.number.type;
+    if (op->next){
+        warning("Too many arguments in exp2.  Ignoring the rest.");
     }
 
-    result->value = pow(2, op->data.function.opList->data.number.value);
+    *result = eval(op);
+    result->value = pow(2, result->value);
     printf("result %f\n", result->value);
 
     return result;
@@ -241,13 +218,17 @@ RET_VAL *evalLog(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
+        warning("Too few arguments in log.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in log.  Ignoring the rest.");
+    }
 
-    result->value = log(op->data.function.opList->data.number.value);
-    result->type = op->data.number.type;
+    *result = eval(op);
+    result->value = log(result->value);
+    printf("result %f\n", result->value);
 
     return result;
 }
@@ -256,17 +237,17 @@ RET_VAL *evalSqrt(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op->next != NULL){
-        warning("Too many arguments in addition.");
+        warning("Too few arguments in sqrt.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in sqrt.  Ignoring the rest.");
+    }
 
-    result->value = sqrt(op->data.function.opList->data.number.value);
-    result->type = op->data.number.type;
+    *result = eval(op);
+    result->value = sqrt(result->value);
+    printf("result %f\n", result->value);
 
     return result;
 }
@@ -275,112 +256,120 @@ RET_VAL *evalCbrt(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op->next != NULL){
-        warning("Too many arguments in addition.");
+        warning("Too few arguments in cbrt.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next){
+        warning("Too many arguments in cbrt.  Ignoring the rest.");
+    }
 
-    result->value = cbrt(op->data.function.opList->data.number.value);
-    result->type = op->data.number.type;
+    *result = eval(op);
+    result->value = cbrt(result->value);
+    printf("result %f\n", result->value);
 
     return result;
 }
 
-//binary functions
-RET_VAL *evalSub(AST_NODE *op1, AST_NODE *op2) {
+/*
+ * binary functions
+ **/
+RET_VAL *evalSub(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-    if ((op1 == NULL || op2 == NULL) || (op1 && op2 == NULL)) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op1->next != NULL || op2->next != NULL){
-        warning("Too many arguments in addition.");
+    if (op == NULL) {
+        warning("Too few arguments in sub.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next->next){
+        warning("Too many arguments in log.  Ignoring the rest.");
+    }
 
-    result->type = op1->type || op2->type;
-    result->value = (op1->data.function.opList->data.number.value - op2->data.function.opList->data.number.value);
+    *result = eval(op);
+    result->value -= op->next->data.number.value;
+    printf("result %f\n", result->value);
 
     return result;
 }
 
-RET_VAL *evalDiv(AST_NODE *op1, AST_NODE *op2) {
+RET_VAL *evalDiv(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-    if ((op1 == NULL || op2 == NULL) || (op1 && op2 == NULL)) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op1->next != NULL || op2->next != NULL){
-        warning("Too many arguments in addition.");
+    if (op == NULL || op->next == NULL) {
+        warning("Too few arguments in div.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next->next){
+        warning("Too many arguments in div.  Ignoring the rest.");
+    }
 
-    result->type = op1->type || op2->type;
-    result->value = (op1->data.function.opList->data.number.value / op2->data.function.opList->data.number.value);
+    *result = eval(op);
+    result->value /= op->next->data.number.value;
+    printf("result %f\n", result->value);
 
     return result;
 }
 
-RET_VAL *evalRem(AST_NODE *op1, AST_NODE *op2) {
+//RET_VAL *evalRem(AST_NODE *op) {
+//    RET_VAL *result = malloc(sizeof(RET_VAL));
+//
+//    if ((op1 == NULL || op2 == NULL) || (op1 && op2 == NULL)) {
+//        warning("Too few arguments in rem.");
+//        *result = NAN_RET_VAL;
+//        return result;
+//    } else if (op1->next != NULL || op2->next != NULL) {
+//        warning("Too many arguments in rem.");
+//        *result = NAN_RET_VAL;
+//        return result;
+//    }
+//
+//    result->type = op1->type || op2->type;
+//    result->value = fmod(op1->data.function.opList->data.number.value, op2->data.function.opList->data.number.value);
+//
+//
+//    return result;
+//}
+//
+RET_VAL *evalPow(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
+    RET_VAL *result2 = malloc(sizeof(RET_VAL));
 
-    if ((op1 == NULL || op2 == NULL) || (op1 && op2 == NULL)) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op1->next != NULL || op2->next != NULL){
-        warning("Too many arguments in addition.");
+    if (op == NULL || op->next == NULL) {
+        warning("Too few arguments in pow.");
         *result = NAN_RET_VAL;
         return result;
     }
+    if (op->next->next){
+        warning("Too many arguments in pow.  Ignoring the rest.");
+    }
 
-    result->type = op1->type || op2->type;
-    result->value = fmod(op1->data.function.opList->data.number.value, op2->data.function.opList->data.number.value);
-
+    *result = eval(op);
+    *result2 = eval(op->next);
+    result->value = pow(result->value, result2->value);
+    printf("result %f\n", result->value);
 
     return result;
 }
 
-RET_VAL *evalPow(AST_NODE *op1, AST_NODE *op2) {
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-
-    if ((op1 == NULL || op2 == NULL) || (op1 && op2 == NULL)) {
-        warning("Too few arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }else if (op1->next != NULL || op2->next != NULL){
-        warning("Too many arguments in addition.");
-        *result = NAN_RET_VAL;
-        return result;
-    }
-
-    result->value = pow(op1->data.function.opList->data.number.value, op2->data.function.opList->data.number.value);
-    result->type = op1->data.number.type;
-
-    return result;
-}
-
-//n-ary functions
+/*
+ * n-ary functions
+ **/
 RET_VAL *evalAdd(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
     if (op == NULL) {
-        warning("Too few arguments in addition.");
-        return 0;
+        warning("Too few arguments in add.");
+        result->value = 0;
+        return result;
     }
 
-    result->type = op->data.number.type;
-    while (op != NULL){
-        double number = op->data.function.opList->data.number.value;
-        result->value += number;
+    *result = eval(op);
+
+    while (op->next != NULL) {
+        double number = op->next->data.number.value;
+        result->value = result->value + number;
         op = op->next;
     }
 
@@ -388,20 +377,21 @@ RET_VAL *evalAdd(AST_NODE *op) {
 
     return result;
 }
+
 RET_VAL *evalMult(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-    if (op->data.function.opList == NULL){
-        warning("mult called with no operands!  nan returned!");
-        *result = NAN_RET_VAL;
+    if (op == NULL) {
+        warning("Too few arguments in mult.");
+        result->value = 1;
         return result;
     }
 
-    result->type = op->data.number.type;
-    result->value = 1;
-    while (op != NULL){
-        double number = op->data.function.opList->data.number.value;
-        result->value *= number;
+    *result = eval(op);
+
+    while (op->next != NULL) {
+        double number = op->next->data.number.value;
+        result->value = result->value * number;
         op = op->next;
     }
 
@@ -409,24 +399,27 @@ RET_VAL *evalMult(AST_NODE *op) {
 
     return result;
 }
+
 RET_VAL *evalHypot(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-    if (op->data.function.opList == NULL){
-        warning("hypot called with no operands!  nan returned!");
-        *result = NAN_RET_VAL;
+    if (op == NULL) {
+        warning("Too few arguments in mult.");
+        result->value = 0;
         return result;
     }
 
-    while (op != NULL){
-        double number = pow(op->data.function.opList->data.number.value, 2);
-        result->value += number;
+    *result = eval(op);
+
+    while (op->next != NULL) {
+        double number = op->next->data.number.value;
+        result->value = result->value + number;
         op = op->next;
     }
 
-//    result->type = op->data.number.type;
     result->value = sqrt(result->value);
-    printf("result: %f\n", result->value);
+
+    printf("%f\n", result->value);
 
     return result;
 }
@@ -434,20 +427,20 @@ RET_VAL *evalHypot(AST_NODE *op) {
 RET_VAL *evalMax(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-//    if (op->data.function.opList == NULL){
-//        warning("max called with no operands!  nan returned!");
-//        *result = NAN_RET_VAL;
-//        return result;
-//    }
+    if (op == NULL) {
+        warning("Too few arguments in mult.");
+        result->value = 0;
+        return result;
+    }
 
-    result->type = op->data.number.type;
-    result->value = op->data.function.opList->data.number.value;
-    while (op != NULL){
-        result->value = fmax(result->value, op->data.function.opList->data.number.value);
+    *result = eval(op);
+
+    while (op->next != NULL) {
+        result->value = fmax(result->value, op->next->data.number.value);
         op = op->next;
     }
 
-    printf("result %f\n", result->value);
+    printf("%f\n", result->value);
 
     return result;
 }
@@ -455,21 +448,20 @@ RET_VAL *evalMax(AST_NODE *op) {
 RET_VAL *evalMin(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-//    if (op->data.function.opList == NULL){
-//        warning("min called with no operands!  nan returned!");
-//        *result = NAN_RET_VAL;
-//        return result;
-//    }
+    if (op == NULL) {
+        warning("Too few arguments in mult.");
+        result->value = 0;
+        return result;
+    }
 
-    result->type = op->data.number.type;
-    result->value = op->data.function.opList->data.number.value;
+    *result = eval(op);
 
-    while (op != NULL) {
-        result->value = fmin(result->value, op->data.function.opList->data.number.value);
+    while (op->next != NULL) {
+        result->value = fmin(result->value, op->next->data.number.value);
         op = op->next;
     }
 
-    printf("result %f\n", result->value);
+    printf("%f\n", result->value);
 
     return result;
 }
@@ -513,18 +505,18 @@ RET_VAL evalFuncNode(AST_NODE *node) {
             break;
             //binary
         case SUB_FUNC:
-            evalSub(node->data.function.opList, node->data.function.opList->next);
+            evalSub(node->data.function.opList);
             break;
         case DIV_FUNC:
-            evalDiv(node->data.function.opList, node->data.function.opList->next);
+            evalDiv(node->data.function.opList);
             break;
         case REMAINDER_FUNC:
-            evalRem(node->data.function.opList, node->data.function.opList->next);
-            break;
+//            evalRem(node->data.function.opList);
+//            break;
         case POW_FUNC:
-            evalPow(node->data.function.opList, node->data.function.opList->next);
+            evalPow(node->data.function.opList);
             break;
-        //n-ary
+            //n-ary
         case ADD_FUNC:
             evalAdd(node->data.function.opList);
             break;
@@ -568,14 +560,10 @@ RET_VAL eval(AST_NODE *node) {
     // TODO complete the function - done???
     switch (node->type) {
         case NUM_NODE_TYPE:
-            evalNumNode(node);
-            break;
+            return evalNumNode(node);
         case FUNC_NODE_TYPE:
-            evalFuncNode(node);
-            break;
+            return evalFuncNode(node);
     }
-
-    return NAN_RET_VAL;
 }
 
 // prints the type and value of a RET_VAL
