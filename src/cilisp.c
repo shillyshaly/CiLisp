@@ -116,7 +116,7 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
         exit(1);
     }
 
-    // TODO complete the function - DONE
+    // TODO complete the function
     // Populate the allocated AST_NODE *node's data
     node->type = FUNC_NODE_TYPE;
     node->data.function.func = func;
@@ -145,9 +145,6 @@ RET_VAL *evalNeg(AST_NODE *op) {
         warning("Too few arguments in neg.");
         *result = NAN_RET_VAL;
         return result;
-    }
-    if (op->next){
-        warning("Too many arguments in neg.  Ignoring the rest.");
     }
 
     *result = eval(op);
@@ -277,7 +274,7 @@ RET_VAL *evalCbrt(AST_NODE *op) {
 RET_VAL *evalSub(AST_NODE *op) {
     RET_VAL *result = malloc(sizeof(RET_VAL));
 
-    if (op == NULL) {
+    if (op == NULL || op->next == NULL) {
         warning("Too few arguments in sub.");
         *result = NAN_RET_VAL;
         return result;
@@ -368,8 +365,7 @@ RET_VAL *evalAdd(AST_NODE *op) {
     *result = eval(op);
 
     while (op->next != NULL) {
-        double number = op->next->data.number.value;
-        result->value = result->value + number;
+        result->value += op->next->data.number.value;
         op = op->next;
     }
 
@@ -585,7 +581,8 @@ void freeFuncNode(AST_NODE *node){
     if (!node){
         return;
     }
-    freeNode(node->data.function.opList);
+    free(node->data.function.opList);
+
 }
 
 void freeNode(AST_NODE *node) {
@@ -604,8 +601,8 @@ void freeNode(AST_NODE *node) {
     // to free as well (but this should probably be done in
     // a call to another function, named something like
     // freeFunctionNode)
-
     freeNode(node->next);
+
     if (node->type == FUNC_NODE_TYPE){
         freeFuncNode(node);
     }

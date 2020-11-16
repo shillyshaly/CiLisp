@@ -8,12 +8,14 @@
 %union {
     double dval;
     int ival;
+    char *sval;
     struct ast_node *astNode;
 }
 
 %token <ival> FUNC
 %token <dval> INT DOUBLE
-%token QUIT EOL EOFT LPAREN RPAREN
+%token QUIT EOL EOFT LPAREN RPAREN let
+%token <sval> SYMBOL
 
 %type <astNode> s_expr s_expr_section s_expr_list f_expr number
 
