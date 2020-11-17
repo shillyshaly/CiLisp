@@ -464,44 +464,44 @@ RET_VAL evalHypot(AST_NODE *op) {
     return result;
 }
 
-RET_VAL *evalMax(AST_NODE *op) {
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-
+RET_VAL evalMax(AST_NODE *op) {
+    RET_VAL result;
+    RET_VAL result2;
     if (op == NULL) {
         warning("Too few arguments in max.");
-        result->value = 0;
+        result = ZERO_RET_VAL;
         return result;
     }
 
-    *result = eval(op);
+    result = eval(op);
+    op = op->next;
 
-    while (op->next != NULL) {
-        result->value = fmax(result->value, op->next->data.number.value);
+    while (op) {
+        result2 = eval(op);
+        result.value = fmax(result.value, result2.value);
         op = op->next;
     }
-
-    printf("%f\n", result->value);
 
     return result;
 }
 
-RET_VAL *evalMin(AST_NODE *op) {
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-
+RET_VAL evalMin(AST_NODE *op) {
+    RET_VAL result;
+    RET_VAL result2;
     if (op == NULL) {
-        yyerror("Too few arguments in min.");
-        result->value = 0;
+        warning("Too few arguments in max.");
+        result = ZERO_RET_VAL;
         return result;
     }
 
-    *result = eval(op);
+    result = eval(op);
+    op = op->next;
 
-    while (op->next != NULL) {
-        result->value = fmin(result->value, op->next->data.number.value);
+    while (op) {
+        result2 = eval(op);
+        result.value = fmin(result.value, result2.value);
         op = op->next;
     }
-
-    printf("%f\n", result->value);
 
     return result;
 }
@@ -553,11 +553,9 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case HYPOT_FUNC:
             return evalHypot(node->data.function.opList);
         case MAX_FUNC:
-            evalMax(node->data.function.opList);
-            break;
+            return evalMax(node->data.function.opList);
         case MIN_FUNC:
-            evalMin(node->data.function.opList);
-            break;
+            return evalMin(node->data.function.opList);
         case CUSTOM_FUNC:
             break;
     }
