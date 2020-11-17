@@ -30,3 +30,6 @@ TASK 1:
     not sure with division, if i have to make if statement based on type for int division
     remainder is not returning correct
     --sub is fine
++fix memory leaks
+
+TASK 2:
