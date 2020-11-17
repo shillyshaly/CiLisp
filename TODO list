@@ -15,10 +15,18 @@ QUESTIONS:
 
 
 BUGS:
--not passing arguments through the program
+TASK 1:
++not passing arguments through the program
     I'm pretty sure it's not printing because i'm not pushing anything onto a stack for processing
--adding to expression list not completed properly
+    --found out I was passing pointers instead of the RET_VAL, evalFuncNode wasn't returning anything.
++adding to expression list not completed properly
     I'm not sure if i have to create push/pop style functions or if i can just do it all in the function
     call itself.  prob the function call???
--most functions still need work due to adding functions to list
+    --Same as before.  no pop/push needed
++most functions still need work due to adding functions to list
     most cases not handling 0 operands correctly
+    --fixed
++remainder is incorrect, divide returns wrong number, sub is incorrect
+    not sure with division, if i have to make if statement based on type for int division
+    remainder is not returning correct
+    --sub is fine

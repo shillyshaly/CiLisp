@@ -330,6 +330,7 @@ RET_VAL evalDiv(AST_NODE *op) {
     }
 
     result2 = eval(op);
+
     result.value = result.value / result2.value;
 
     return result;
@@ -353,8 +354,11 @@ RET_VAL evalRem(AST_NODE *op) {
     }
 
     result2 = eval(op);
-//    result.value = result.value % result2.value;
-    result.value = fmod(result.value, result2.value);
+    result.value = remainder(result.value, result2.value);
+
+    if (result.value < 0){
+        result.value = -result.value;
+    }
 
     return result;
 }
