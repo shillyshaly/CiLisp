@@ -1,2 +1,2 @@
-(add 2 (add 5 7))
+(hypot 5 5 5)
 quit

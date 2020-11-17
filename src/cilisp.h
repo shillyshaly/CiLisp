@@ -93,6 +93,7 @@ typedef struct ast_node {
 
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
 AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList);
+
 AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
 
 RET_VAL eval(AST_NODE *node);

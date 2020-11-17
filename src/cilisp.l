@@ -58,7 +58,7 @@ quit {
     return EOFT;
     }
 
-[ \t\r] {}; /* skip whitespace */
+[ \t\r] ; /* skip whitespace */
 
 . { // anything else
     llog(INVALID);
