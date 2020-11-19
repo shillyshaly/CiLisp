@@ -11,7 +11,8 @@ digit   [0-9]
 int     [+-]?{digit}+
 double  [+-]?{digit}+\.({digit}*)
 func    "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
-
+letter  [a-z]|[A-Z]|"$"|"_"
+symbol  {letter}+({letter}|{digit})*
 
 %%
 
@@ -33,6 +34,14 @@ func    "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log
     return FUNC;
 }
 
+{symbol} {
+    llog(SYMBOL);
+    yylval.sval = malloc((strlen(yytext) + 1)*(sizeof(char *)));
+    strcpy(yylval.sval, yytext);
+    return SYMBOL;
+}
+
+
 quit {
     llog(QUIT);
     return QUIT;
@@ -46,6 +55,11 @@ quit {
 ")" {
     llog(RPAREN);
     return RPAREN;
+}
+
+let {
+    llog(LET);
+    return LET;
 }
 
 [\n] {

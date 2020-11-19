@@ -10,14 +10,16 @@
     int ival;
     char *sval;
     struct ast_node *astNode;
+    struct st_node *stNode;
 }
 
 %token <ival> FUNC
 %token <dval> INT DOUBLE
-%token QUIT EOL EOFT LPAREN RPAREN let
+%token QUIT EOL EOFT LPAREN RPAREN LET
 %token <sval> SYMBOL
 
 %type <astNode> s_expr s_expr_section s_expr_list f_expr number
+%type <stNode> let_section let_list let_elem
 
 %%
 
@@ -57,6 +59,14 @@ s_expr:
     	ylog(s_expr, number);
     	$$ = $1;
     }
+    | SYMBOL {
+    	ylog(s_expr, SYMBOL);
+    	$$ = createSymbolNode($1);
+    }
+    | LPAREN let_section s_expr RPAREN {
+    	ylog(s_expr, LPAREN let_section s_expr RPAREN);
+    	$$ = createScopeAstNode($2, $3);
+    }
     | QUIT {
         ylog(s_expr, QUIT);
         exit(EXIT_SUCCESS);
@@ -94,6 +104,31 @@ s_expr_list:
     | s_expr s_expr_list {
     	ylog(s_expr_list, s_expr s_expr_list);
     	$$ = addExpressionToList($1, $2);
+    };
+
+
+let_section:
+    LPAREN LET let_list RPAREN {
+    	ylog(let_section,LPAREN let let_list RPAREN);
+    	$$ = $3;
+    };
+
+
+let_list:
+    let_elem {
+    	ylog(let_list, let_elem);
+    	$$ = $1;
+    }
+    | let_elem let_list {
+    	ylog(let_list, let_elem let_list);
+    	$$ = addSymbolToList($1, $2);
+    };
+
+
+let_elem:
+    LPAREN SYMBOL s_expr RPAREN {
+    	ylog(let_elem, LPAREN SYMBOL s_expr RPAREN);
+    	$$ = createStNode($2, $3);
     };
 
 

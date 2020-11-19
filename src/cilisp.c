@@ -131,6 +131,67 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
     return newExpr;
 }
 
+//fix all new functions below
+//still have to do
+AST_NODE *createSymbolNode(char *id){
+    AST_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    return node;
+}
+AST_NODE *createScopeAstNode(SYMBOL_TABLE_NODE *sT, AST_NODE *child){
+    AST_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    node->type = SCOPE_NODE_TYPE;
+
+    node->data.scope.child = child;
+    child->parent = node;
+    child->symbolTable = sT;
+
+    while (sT != NULL){
+        sT->value->parent = child;
+        sT = sT->next;
+    }
+
+    sT->value->parent = child;
+
+    return node;
+}
+SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value) {
+    SYMBOL_TABLE_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    node->id = id;
+    node->value = value;
+
+    return node;
+}
+//might be done
+SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
+    newExpr->next = symTblList;
+    return newExpr;
+}
+//fix all new fuctions above
+
 ///
 ///  list of op functions
 ///
@@ -331,7 +392,7 @@ RET_VAL evalDiv(AST_NODE *op) {
 
     result2 = eval(op);
 
-    result.value = result.value / result2.value;
+    result.value = (int)(result.value / result2.value);
 
     return result;
 }
@@ -354,10 +415,9 @@ RET_VAL evalRem(AST_NODE *op) {
     }
 
     result2 = eval(op);
-    result.value = remainder(result.value, result2.value);
-
+    result.value = fmod(result.value, result2.value);
     if (result.value < 0){
-        result.value = -result.value;
+        result.value = fabs(result2.value) + result.value;
     }
 
     return result;
@@ -563,6 +623,11 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case CUSTOM_FUNC:
             break;
     }
+}
+
+RET_VAL evalSymbolNode(AST_NODE *node){
+
+    return node->data.number;//change me
 }
 
 RET_VAL evalNumNode(AST_NODE *node) {

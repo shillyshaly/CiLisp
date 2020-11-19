@@ -74,29 +74,60 @@ typedef struct ast_function {
     struct ast_node *opList;
 } AST_FUNCTION;
 
-
+// task2 : add new node types sym and scope
 typedef enum ast_node_type {
     NUM_NODE_TYPE,
-    FUNC_NODE_TYPE
+    FUNC_NODE_TYPE,
+    SYM_NODE_TYPE,
+    SCOPE_NODE_TYPE
 } AST_NODE_TYPE;
 
+// task2 : add structs for symbol and scope from readMe
+typedef struct {
+    char* id;
+} AST_SYMBOL;
 
+
+typedef struct {
+    struct ast_node *child;
+} AST_SCOPE;
+
+// task2 : changed to include symbols and scope
 typedef struct ast_node {
     AST_NODE_TYPE type;
+    struct ast_node *parent;
+    struct symbol_table_node *symbolTable;
     union {
         AST_NUMBER number;
         AST_FUNCTION function;
+        AST_SYMBOL symbol;
+        AST_SCOPE scope;
     } data;
     struct ast_node *next;
 } AST_NODE;
 
+/* task2 : linked list of symbols in each scope to
+** keep track of the symbol names alongside their values
+*/
+ typedef struct symbol_table_node {
+    char *id;
+    AST_NODE *value;
+    struct symbol_table_node *next;
+} SYMBOL_TABLE_NODE;
+
 
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
 AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList);
-
 AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
+//need to add some functions for task2
+AST_NODE *createSymbolNode(char *id);
+AST_NODE *createScopeAstNode(SYMBOL_TABLE_NODE *sT, AST_NODE *child);
+SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value);
+SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
 
 RET_VAL eval(AST_NODE *node);
+//add eval for symbol
+RET_VAL evalSymbolNode(AST_NODE *node);
 
 void printRetVal(RET_VAL val);
 
