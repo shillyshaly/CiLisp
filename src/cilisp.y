@@ -65,7 +65,7 @@ s_expr:
     }
     | LPAREN let_section s_expr RPAREN {
     	ylog(s_expr, LPAREN let_section s_expr RPAREN);
-    	$$ = createScopeAstNode($2, $3);
+    	$$ = createScopeNode($2, $3);
     }
     | QUIT {
         ylog(s_expr, QUIT);
@@ -109,7 +109,7 @@ s_expr_list:
 
 let_section:
     LPAREN LET let_list RPAREN {
-    	ylog(let_section,LPAREN let let_list RPAREN);
+    	ylog(let_section,LPAREN LET let_list RPAREN);
     	$$ = $3;
     };
 

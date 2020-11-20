@@ -131,8 +131,10 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
     return newExpr;
 }
 
+///TASK 2 functions
 //fix all new functions below
-//still have to do
+
+//TODO - create a symbol node
 AST_NODE *createSymbolNode(char *id){
     AST_NODE *node;
     size_t nodeSize;
@@ -142,10 +144,14 @@ AST_NODE *createSymbolNode(char *id){
         yyerror("Memory allocation failed!");
         exit(1);
     }
+    node->type = SYM_NODE_TYPE;
+//    node->symbolTable->id = id;
+    node->data.symbol.id = id;
 
     return node;
 }
-AST_NODE *createScopeAstNode(SYMBOL_TABLE_NODE *sT, AST_NODE *child){
+//TODO - create a scope node
+AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){
     AST_NODE *node;
     size_t nodeSize;
 
@@ -159,37 +165,39 @@ AST_NODE *createScopeAstNode(SYMBOL_TABLE_NODE *sT, AST_NODE *child){
 
     node->data.scope.child = child;
     child->parent = node;
-    child->symbolTable = sT;
+    child->symbolTable = stNode;
 
-    while (sT != NULL){
-        sT->value->parent = child;
-        sT = sT->next;
+    while (stNode != NULL){
+        stNode->value->parent = child;
+        stNode = stNode->next;
     }
-
-    sT->value->parent = child;
 
     return node;
 }
-SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value) {
-    SYMBOL_TABLE_NODE *node;
-    size_t nodeSize;
-
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL) {
-        yyerror("Memory allocation failed!");
-        exit(1);
-    }
-
-    node->id = id;
-    node->value = value;
-
-    return node;
-}
-//might be done
+//TODO - linking "symbol table nodes" together into linked lists
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
     newExpr->next = symTblList;
     return newExpr;
 }
+//TODO - linking "symbol table node linked lists" into a node  whose scope they are in
+SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value) {
+    SYMBOL_TABLE_NODE *stNode;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((stNode = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    stNode->id = id;
+    stNode->value = value;
+
+    return stNode;
+}
+//TODO - look through symbol tables to find symbols to send to eval
+
+
 //fix all new fuctions above
 
 ///
@@ -571,7 +579,7 @@ RET_VAL evalMin(AST_NODE *op) {
 }
 
 ///
-///  end list of functions
+///  end list of op functions
 ///
 
 RET_VAL evalFuncNode(AST_NODE *node) {
@@ -625,11 +633,6 @@ RET_VAL evalFuncNode(AST_NODE *node) {
     }
 }
 
-RET_VAL evalSymbolNode(AST_NODE *node){
-
-    return node->data.number;//change me
-}
-
 RET_VAL evalNumNode(AST_NODE *node) {
     if (!node) {
         yyerror("NULL ast node passed into evalNumNode!");
@@ -644,6 +647,48 @@ RET_VAL evalNumNode(AST_NODE *node) {
     return *result;
 }
 
+/// eval functions for symbol and scope
+//TODO - ???
+RET_VAL evalSymbolNode(AST_NODE *node){
+    AST_NODE *currScope;
+    SYMBOL_TABLE_NODE *stNode;
+
+    if (!node) {
+        yyerror("NULL ast node passed into evalSymbolNode!");
+        return NAN_RET_VAL;
+    }
+
+    currScope = node;
+
+    while (currScope){
+        stNode = currScope->symbolTable;
+        while (stNode){
+            if (strcmp(stNode->id, node->data.symbol.id) == 0){
+                RET_VAL result = eval(stNode->value);
+                if (stNode->value->type == NUM_NODE_TYPE){
+                    return result;
+                }
+                freeNode(stNode->value);
+                stNode->value = createNumberNode(result.value, result.type);
+            }
+            stNode = stNode->next;
+        }
+        currScope = currScope->next;
+    }
+    warning("The variable was undefined.");
+    return NAN_RET_VAL;//change me
+}
+
+//TODO - ???
+RET_VAL evalScopeNode(AST_NODE *node){
+    if (!node) {
+        yyerror("NULL ast node passed into evalSymbolNode!");
+        return NAN_RET_VAL;
+    }
+    return eval(node->data.scope.child);
+}
+
+//TODO - add switches for scope and symbol
 RET_VAL eval(AST_NODE *node) {
     if (!node) {
         yyerror("NULL ast node passed into eval!");
@@ -656,6 +701,10 @@ RET_VAL eval(AST_NODE *node) {
             return evalNumNode(node);
         case FUNC_NODE_TYPE:
             return evalFuncNode(node);
+        case SYM_NODE_TYPE:
+            return evalSymbolNode(node);
+        case SCOPE_NODE_TYPE:
+            return evalScopeNode(node);
     }
 }
 
@@ -674,6 +723,7 @@ void printRetVal(RET_VAL val) {
     }
 }
 
+//TODO - UPDATE
 void freeFuncNode(AST_NODE *node) {
     if (!node) {
         return;
@@ -682,6 +732,7 @@ void freeFuncNode(AST_NODE *node) {
 
 }
 
+//TODO - UPDATE
 void freeNode(AST_NODE *node) {
     if (!node) {
         return;

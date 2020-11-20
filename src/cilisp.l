@@ -34,14 +34,6 @@ symbol  {letter}+({letter}|{digit})*
     return FUNC;
 }
 
-{symbol} {
-    llog(SYMBOL);
-    yylval.sval = malloc((strlen(yytext) + 1)*(sizeof(char *)));
-    strcpy(yylval.sval, yytext);
-    return SYMBOL;
-}
-
-
 quit {
     llog(QUIT);
     return QUIT;
@@ -62,6 +54,12 @@ let {
     return LET;
 }
 
+{symbol} {
+    llog(SYMBOL);
+    yylval.sval = malloc((strlen(yytext) + 1)*sizeof(char));
+    strcpy(yylval.sval, yytext);
+    return SYMBOL;
+}
 [\n] {
     llog(EOL);
     return EOL;
