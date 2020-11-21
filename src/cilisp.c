@@ -145,7 +145,6 @@ AST_NODE *createSymbolNode(char *id){
         exit(1);
     }
     node->type = SYM_NODE_TYPE;
-//    node->symbolTable->id = id;
     node->data.symbol.id = id;
 
     return node;
