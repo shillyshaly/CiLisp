@@ -166,7 +166,7 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){
     child->parent = node;
     child->symbolTable = stNode;
 
-    while (stNode != NULL){
+    while (stNode){
         stNode->value->parent = child;
         stNode = stNode->next;
     }
@@ -651,28 +651,29 @@ RET_VAL evalNumNode(AST_NODE *node) {
 RET_VAL evalSymbolNode(AST_NODE *node){
     AST_NODE *currScope;
     SYMBOL_TABLE_NODE *stNode;
-
     if (!node) {
         yyerror("NULL ast node passed into evalSymbolNode!");
         return NAN_RET_VAL;
     }
 
     currScope = node;
-
     while (currScope){
+
         stNode = currScope->symbolTable;
+
         while (stNode){
+
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
-                if (stNode->value->type == NUM_NODE_TYPE){
-                    return result;
+                if (stNode->value->type != NUM_NODE_TYPE){
+                    freeNode(stNode->value);
+                    stNode->value = createNumberNode(result.value, result.type);
                 }
-                freeNode(stNode->value);
-                stNode->value = createNumberNode(result.value, result.type);
+                return result;
             }
             stNode = stNode->next;
         }
-        currScope = currScope->next;
+        currScope = currScope->parent;
     }
     warning("The variable was undefined.");
     return NAN_RET_VAL;//change me

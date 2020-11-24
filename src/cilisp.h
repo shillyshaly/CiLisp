@@ -126,6 +126,10 @@ SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value);
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
 
 RET_VAL eval(AST_NODE *node);
+
+
+
+
 //add eval for symbol
 RET_VAL evalSymbolNode(AST_NODE *node);
 RET_VAL evalScopeNode(AST_NODE *node);

@@ -1,1 +1,2 @@
-( (let (x 2) ) (add x 3) )
+( (let (a 1) (b a)) ((let (a 2)) b ) )
+quit
