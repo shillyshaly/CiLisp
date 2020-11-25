@@ -86,6 +86,15 @@ FUNC_TYPE resolveFunc(char *funcName) {
     return CUSTOM_FUNC;
 }
 
+///TASK 3
+NUM_TYPE resolveNumType(char *type){
+    if (strcmp(type, "int") == 0) {
+        return INT_TYPE;
+    }else {
+        return DOUBLE_TYPE;
+    }
+}
+
 AST_NODE *createNumberNode(double value, NUM_TYPE type) {
     AST_NODE *node;
     size_t nodeSize;
@@ -179,7 +188,7 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
     return newExpr;
 }
 //TODO - linking "symbol table node linked lists" into a node  whose scope they are in
-SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value) {
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
 
@@ -189,6 +198,7 @@ SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value) {
         exit(1);
     }
 
+    stNode->type = type;
     stNode->id = id;
     stNode->value = value;
 
@@ -676,7 +686,7 @@ RET_VAL evalSymbolNode(AST_NODE *node){
         currScope = currScope->parent;
     }
     warning("The variable was undefined.");
-    return NAN_RET_VAL;//change me
+    return NAN_RET_VAL;
 }
 
 //TODO - ???

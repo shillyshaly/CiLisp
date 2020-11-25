@@ -1,2 +1,3 @@
-( (let (a 1) (b a)) ((let (a 2)) b ) )
+( (let (int a 1.25)) a)
+((let (int a 1.25))(add a 1))
 quit

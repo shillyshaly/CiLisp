@@ -54,10 +54,10 @@ typedef enum func_type {
 
 FUNC_TYPE resolveFunc(char *);
 
-
 typedef enum num_type {
     INT_TYPE,
     DOUBLE_TYPE,
+    NO_TYPE
 } NUM_TYPE;
 
 
@@ -110,6 +110,7 @@ typedef struct ast_node {
 ** keep track of the symbol names alongside their values
 */
  typedef struct symbol_table_node {
+    NUM_TYPE type;
     char *id;
     AST_NODE *value;
     struct symbol_table_node *next;
@@ -122,14 +123,12 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
 //need to add some functions for task2
 AST_NODE *createSymbolNode(char *id);
 AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child);
-SYMBOL_TABLE_NODE *createStNode(char *id, AST_NODE *value);
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value);
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
 
+NUM_TYPE resolveNumType(char *type);
+
 RET_VAL eval(AST_NODE *node);
-
-
-
-
 //add eval for symbol
 RET_VAL evalSymbolNode(AST_NODE *node);
 RET_VAL evalScopeNode(AST_NODE *node);

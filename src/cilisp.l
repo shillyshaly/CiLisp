@@ -4,7 +4,7 @@
 
 %{
     #include "cilisp.h"
-    #define llog(token) {fprintf(flex_bison_log_file, "LEX: %s \"%s\"\n", #token, yytext); fflush(stdout);}
+    #define llog(token) {fprintf(flex_bison_log_file, "LEX: %s \"%s\"\n", #token, yytext); fflush(flex_bison_log_file);}
 %}
 
 digit   [0-9]
@@ -13,6 +13,7 @@ double  [+-]?{digit}+\.({digit}*)
 func    "neg"|"abs"|"add"|"sub"|"mult"|"div"|"remainder"|"exp"|"exp2"|"pow"|"log"|"sqrt"|"cbrt"|"hypot"|"max"|"min"
 letter  [a-z]|[A-Z]|"$"|"_"
 symbol  {letter}+({letter}|{digit})*
+type    "int"|"double"
 
 %%
 
@@ -54,12 +55,19 @@ let {
     return LET;
 }
 
+{type} {
+    llog(TYPE);
+    yylval.ival = resolveNumType(yytext);
+    return TYPE;
+}
+
 {symbol} {
     llog(SYMBOL);
     yylval.sval = malloc((strlen(yytext) + 1)*sizeof(char));
     strcpy(yylval.sval, yytext);
     return SYMBOL;
 }
+
 [\n] {
     llog(EOL);
     return EOL;

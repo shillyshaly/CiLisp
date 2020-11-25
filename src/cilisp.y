@@ -1,6 +1,6 @@
 %{
     #include "cilisp.h"
-    #define ylog(r, p) {fprintf(flex_bison_log_file, "BISON: %s ::= %s \n", #r, #p); fflush(stdout);}
+    #define ylog(r, p) {fprintf(flex_bison_log_file, "BISON: %s ::= %s \n", #r, #p); fflush(flex_bison_log_file);}
     int yylex();
     void yyerror(char*, ...);
 %}
@@ -13,7 +13,7 @@
     struct st_node *stNode;
 }
 
-%token <ival> FUNC
+%token <ival> FUNC TYPE
 %token <dval> INT DOUBLE
 %token QUIT EOL EOFT LPAREN RPAREN LET
 %token <sval> SYMBOL
@@ -128,9 +128,12 @@ let_list:
 let_elem:
     LPAREN SYMBOL s_expr RPAREN {
     	ylog(let_elem, LPAREN SYMBOL s_expr RPAREN);
-    	$$ = createStNode($2, $3);
+    	$$ = createStNode(NO_TYPE, $2, $3);
+    }
+    | LPAREN TYPE SYMBOL s_expr RPAREN {
+        ylog(let_elem, LPAREN TYPE SYMBOL s_expr RPAREN);
+        $$ = createStNode($2, $3, $4);
     };
-
 
 number:
     INT {
