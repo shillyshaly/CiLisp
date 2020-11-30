@@ -109,7 +109,7 @@ s_expr_list:
 
 let_section:
     LPAREN LET let_list RPAREN {
-    	ylog(let_section,LPAREN LET let_list RPAREN);
+    	ylog(let_section, LPAREN LET let_list RPAREN);
     	$$ = $3;
     };
 

@@ -1,3 +1,2 @@
-( (let (int a 1.25)) a)
 ((let (int a 1.25))(add a 1))
 quit

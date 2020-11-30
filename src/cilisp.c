@@ -51,7 +51,7 @@ void warning(char *format, ...) {
     va_end (args);
 }
 
-FUNC_TYPE resolveFunc(char *funcName) {
+FUNC_TYPE resolveFunc(char *funcName) {//5
     // Array of string values for function names.
     // Must be in sync with members of the FUNC_TYPE enum in order for resolveFunc to work.
     // For example, funcNames[NEG_FUNC] should be "neg"
@@ -74,6 +74,13 @@ FUNC_TYPE resolveFunc(char *funcName) {
             "hypot",
             "max",
             "min",
+            //TASK 4 FUNCTIONS
+            "rand",
+            "read",
+            "equal",
+            "less",
+            "greater",
+            "print",
             ""
     };
     int i = 0;
@@ -86,8 +93,7 @@ FUNC_TYPE resolveFunc(char *funcName) {
     return CUSTOM_FUNC;
 }
 
-///TASK 3
-NUM_TYPE resolveNumType(char *type){
+NUM_TYPE resolveNumType(char *type){ //1
     if (strcmp(type, "int") == 0) {
         return INT_TYPE;
     }else {
@@ -95,7 +101,7 @@ NUM_TYPE resolveNumType(char *type){
     }
 }
 
-AST_NODE *createNumberNode(double value, NUM_TYPE type) {
+AST_NODE *createNumberNode(double value, NUM_TYPE type) { //2//7
     AST_NODE *node;
     size_t nodeSize;
 
@@ -115,7 +121,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) {
     return node;
 }
 
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {//10
     AST_NODE *node;
     size_t nodeSize;
 
@@ -131,20 +137,16 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {
     node->data.function.opList = opList;
     node->data.function.func = func;
 
-
     return node;
 }
 
-AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {
+AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {//8//9
     newExpr->next = exprList;
     return newExpr;
 }
 
-///TASK 2 functions
-//fix all new functions below
-
-//TODO - create a symbol node
-AST_NODE *createSymbolNode(char *id){
+//TODO 3- create a symbol node
+AST_NODE *createSymbolNode(char *id){//6
     AST_NODE *node;
     size_t nodeSize;
 
@@ -156,10 +158,11 @@ AST_NODE *createSymbolNode(char *id){
     node->type = SYM_NODE_TYPE;
     node->data.symbol.id = id;
 
+
     return node;
 }
-//TODO - create a scope node
-AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){
+//TODO 3- create a scope node
+AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     AST_NODE *node;
     size_t nodeSize;
 
@@ -170,7 +173,6 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){
     }
 
     node->type = SCOPE_NODE_TYPE;
-
     node->data.scope.child = child;
     child->parent = node;
     child->symbolTable = stNode;
@@ -182,37 +184,54 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){
 
     return node;
 }
-//TODO - linking "symbol table nodes" together into linked lists
+//TODO 3- linking "symbol table nodes" together into linked lists
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
     newExpr->next = symTblList;
     return newExpr;
 }
-//TODO - linking "symbol table node linked lists" into a node  whose scope they are in
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {
+//TODO 3- linking "symbol table node linked lists" into a node  whose scope they are in
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
 
-    nodeSize = sizeof(AST_NODE);
+    nodeSize = sizeof(SYMBOL_TABLE_NODE);
     if ((stNode = calloc(nodeSize, 1)) == NULL) {
         yyerror("Memory allocation failed!");
         exit(1);
     }
 
     stNode->type = type;
+
+    if ((type == INT_TYPE) && (eval(value).type == DOUBLE_TYPE)){
+        warning("Precision loss on int cast from %f to %d.",value->data.number.value, (int )value->data.number.value);
+        value->data.number.value = (int)value->data.number.value;
+    }
+
     stNode->id = id;
     stNode->value = value;
 
     return stNode;
 }
-//TODO - look through symbol tables to find symbols to send to eval
 
-
-//fix all new fuctions above
 
 ///
-///  list of op functions
+/// start list of op functions
 ///
-
+/*
+ * no arguments
+ **/
+//TODO 4
+RET_VAL evalRand(){
+    RET_VAL result;
+    srand(rand());
+    result.value = (rand()/(double)RAND_MAX);
+    return result;
+}
+//TODO 4
+RET_VAL evalRead(){
+    RET_VAL result;
+    return result;
+}
 /*
  * unary functions
  **/
@@ -362,7 +381,11 @@ RET_VAL evalCbrt(AST_NODE *op) {
 
     return result;
 }
-
+//TODO 4
+RET_VAL evalPrint(){
+    RET_VAL result;
+    return result;
+}
 /*
  * binary functions
  **/
@@ -462,7 +485,21 @@ RET_VAL evalPow(AST_NODE *op) {
 
     return result;
 }
-
+//TODO 4
+RET_VAL evalEqual(){
+    RET_VAL result;
+    return result;
+}
+//TODO 4
+RET_VAL evalLess(){
+    RET_VAL result;
+    return result;
+}
+//TODO 4
+RET_VAL evalGreater(){
+    RET_VAL result;
+    return result;
+}
 /*
  * n-ary functions
  **/
@@ -586,7 +623,6 @@ RET_VAL evalMin(AST_NODE *op) {
 
     return result;
 }
-
 ///
 ///  end list of op functions
 ///
@@ -602,6 +638,11 @@ RET_VAL evalFuncNode(AST_NODE *node) {
     // the helper functions that it calls will need to be defined above it
     // because they are not declared in the .h file (and should not be)
     switch (node->data.function.func) {
+        //no args
+        case RAND_FUNC:
+            return evalRand();
+        case READ_FUNC:
+            return evalRead();
         //unary
         case NEG_FUNC:
             return evalNeg(node->data.function.opList);
@@ -617,6 +658,8 @@ RET_VAL evalFuncNode(AST_NODE *node) {
             return evalSqrt(node->data.function.opList);
         case CBRT_FUNC:
             return evalCbrt(node->data.function.opList);
+        case PRINT_FUNC:
+            return evalPrint();
             //binary
         case SUB_FUNC:
             return evalSub(node->data.function.opList);
@@ -626,6 +669,12 @@ RET_VAL evalFuncNode(AST_NODE *node) {
             return evalRem(node->data.function.opList);
         case POW_FUNC:
             return evalPow(node->data.function.opList);
+        case EQUAL_FUNC:
+            return evalEqual();
+        case LESS_FUNC:
+            return evalLess();
+        case GREATER_FUNC:
+            return evalGreater();
             //n-ary
         case ADD_FUNC:
             return evalAdd(node->data.function.opList);
@@ -658,23 +707,25 @@ RET_VAL evalNumNode(AST_NODE *node) {
 
 /// eval functions for symbol and scope
 //TODO - ???
-RET_VAL evalSymbolNode(AST_NODE *node){
+RET_VAL evalSymbolNode(AST_NODE *node){//16
     AST_NODE *currScope;
     SYMBOL_TABLE_NODE *stNode;
+
     if (!node) {
         yyerror("NULL ast node passed into evalSymbolNode!");
         return NAN_RET_VAL;
     }
-
     currScope = node;
+
     while (currScope){
 
-        stNode = currScope->symbolTable;
+        stNode = node->symbolTable;
 
         while (stNode){
 
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
+
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
                     stNode->value = createNumberNode(result.value, result.type);
@@ -690,7 +741,7 @@ RET_VAL evalSymbolNode(AST_NODE *node){
 }
 
 //TODO - ???
-RET_VAL evalScopeNode(AST_NODE *node){
+RET_VAL evalScopeNode(AST_NODE *node){//13
     if (!node) {
         yyerror("NULL ast node passed into evalSymbolNode!");
         return NAN_RET_VAL;
@@ -699,7 +750,7 @@ RET_VAL evalScopeNode(AST_NODE *node){
 }
 
 //TODO - add switches for scope and symbol
-RET_VAL eval(AST_NODE *node) {
+RET_VAL eval(AST_NODE *node) {//4//12//14//15
     if (!node) {
         yyerror("NULL ast node passed into eval!");
         return NAN_RET_VAL;
