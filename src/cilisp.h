@@ -86,7 +86,8 @@ typedef enum ast_node_type {
     NUM_NODE_TYPE,
     FUNC_NODE_TYPE,
     SYM_NODE_TYPE,
-    SCOPE_NODE_TYPE
+    SCOPE_NODE_TYPE,
+    COND_TYPE
 } AST_NODE_TYPE;
 
 // task2 : add structs for symbol and scope from readMe
@@ -99,7 +100,12 @@ typedef struct {
     struct ast_node *child;
 } AST_SCOPE;
 
-// task2 : changed to include symbols and scope
+typedef struct {
+    struct ast_node *condition;
+    struct ast_node *trueCase;
+    struct ast_node *falseCase;
+} AST_COND;
+
 typedef struct ast_node {
     AST_NODE_TYPE type;
     struct ast_node *parent;
@@ -109,6 +115,7 @@ typedef struct ast_node {
         AST_FUNCTION function;
         AST_SYMBOL symbol;
         AST_SCOPE scope;
+        AST_COND condition;
     } data;
     struct ast_node *next;
 } AST_NODE;

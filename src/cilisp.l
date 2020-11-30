@@ -55,6 +55,11 @@ let {
     return LET;
 }
 
+cond {
+    llog(COND);
+    return COND;
+}
+
 {type} {
     llog(TYPE);
     yylval.ival = resolveNumType(yytext);

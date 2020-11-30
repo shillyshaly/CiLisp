@@ -220,16 +220,30 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
 /*
  * no arguments
  **/
-//TODO 4
+//TODO 4 - ???
 RET_VAL evalRand(){
     RET_VAL result;
+
     srand(rand());
     result.value = (rand()/(double)RAND_MAX);
+
     return result;
 }
 //TODO 4
 RET_VAL evalRead(){
     RET_VAL result;
+    //print read to stdout
+    printf("read :: ");
+    //get response from read_target file
+    //if second arg
+        //read from file
+    // else
+        //read from console
+    //if int/double
+        //return duck-typed
+    //else
+        //print warning, return NAN_
+
     return result;
 }
 /*
@@ -381,9 +395,24 @@ RET_VAL evalCbrt(AST_NODE *op) {
 
     return result;
 }
-//TODO 4
-RET_VAL evalPrint(){
+//TODO 4 - ???
+RET_VAL evalPrint(AST_NODE *op){
     RET_VAL result;
+
+    if (op == NULL) {
+        warning("Too few arguments in neg.");
+        result = NAN_RET_VAL;
+        return result;
+    }
+
+    result = eval(op);
+
+    if (op->next != NULL){
+        warning("Too many arguments in neg.  Ignoring the rest.");
+    }
+
+    printRetVal(result);
+
     return result;
 }
 /*
@@ -485,19 +514,109 @@ RET_VAL evalPow(AST_NODE *op) {
 
     return result;
 }
-//TODO 4
-RET_VAL evalEqual(){
+//TODO 4 - ???
+RET_VAL evalEqual(AST_NODE *op){
+    //check for binary
     RET_VAL result;
+    RET_VAL result2;
+    int output= 0;
+
+    if (op == NULL || op->next == NULL) {
+        warning("Too few arguments in sub.");
+        result = NAN_RET_VAL;
+        return result;
+    }
+
+    result = eval(op);
+    op = op->next;
+
+    if (op->next){
+        warning("Too many arguments.  Ignoring the rest.");
+    }
+    result2 = eval(op);
+    //if numbers are equal
+    if (result.value == result2.value) {
+        //return int value 1
+        output = 1;
+        result.value = output;
+        }
+    //else
+    else{
+        //return 0
+        output = 0;
+        result.value = output;
+    }
+
     return result;
 }
-//TODO 4
-RET_VAL evalLess(){
+//TODO 4 - ???
+RET_VAL evalLess(AST_NODE *op){
+    //check for binary
     RET_VAL result;
+    RET_VAL result2;
+    int output= 0;
+
+    if (op == NULL || op->next == NULL) {
+        warning("Too few arguments in sub.");
+        result = NAN_RET_VAL;
+        return result;
+    }
+
+    result = eval(op);
+    op = op->next;
+
+    if (op->next){
+        warning("Too many arguments.  Ignoring the rest.");
+    }
+    result2 = eval(op);
+    //if number is less
+    if (result.value < result2.value) {
+        //return int value 1
+        output = 1;
+        result.value = output;
+    }
+        //else
+    else{
+        //return 0
+        output = 0;
+        result.value = output;
+    }
+
     return result;
 }
-//TODO 4
-RET_VAL evalGreater(){
+//TODO 4 - ???
+RET_VAL evalGreater(AST_NODE *op){
+    //check for binary
     RET_VAL result;
+    RET_VAL result2;
+    int output= 0;
+
+    if (op == NULL || op->next == NULL) {
+        warning("Too few arguments in sub.");
+        result = NAN_RET_VAL;
+        return result;
+    }
+
+    result = eval(op);
+    op = op->next;
+
+    if (op->next){
+        warning("Too many arguments.  Ignoring the rest.");
+    }
+    result2 = eval(op);
+    //if number is greater
+    if (result.value > result2.value) {
+        //return int value 1
+        output = 1;
+        result.value = output;
+    }
+        //else
+    else{
+        //return 0
+        output = 0;
+        result.value = output;
+    }
+
     return result;
 }
 /*
@@ -659,7 +778,7 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case CBRT_FUNC:
             return evalCbrt(node->data.function.opList);
         case PRINT_FUNC:
-            return evalPrint();
+            return evalPrint(node->data.function.opList);
             //binary
         case SUB_FUNC:
             return evalSub(node->data.function.opList);
@@ -670,11 +789,11 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case POW_FUNC:
             return evalPow(node->data.function.opList);
         case EQUAL_FUNC:
-            return evalEqual();
+            return evalEqual(node->data.function.opList);
         case LESS_FUNC:
-            return evalLess();
+            return evalLess(node->data.function.opList);
         case GREATER_FUNC:
-            return evalGreater();
+            return evalGreater(node->data.function.opList);
             //n-ary
         case ADD_FUNC:
             return evalAdd(node->data.function.opList);
@@ -706,7 +825,7 @@ RET_VAL evalNumNode(AST_NODE *node) {
 }
 
 /// eval functions for symbol and scope
-//TODO - ???
+//TODO 3 - ???
 RET_VAL evalSymbolNode(AST_NODE *node){//16
     AST_NODE *currScope;
     SYMBOL_TABLE_NODE *stNode;
@@ -740,7 +859,7 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
     return NAN_RET_VAL;
 }
 
-//TODO - ???
+//TODO 3 - ???
 RET_VAL evalScopeNode(AST_NODE *node){//13
     if (!node) {
         yyerror("NULL ast node passed into evalSymbolNode!");
@@ -749,7 +868,7 @@ RET_VAL evalScopeNode(AST_NODE *node){//13
     return eval(node->data.scope.child);
 }
 
-//TODO - add switches for scope and symbol
+//TODO 3 - add switches for scope and symbol
 RET_VAL eval(AST_NODE *node) {//4//12//14//15
     if (!node) {
         yyerror("NULL ast node passed into eval!");

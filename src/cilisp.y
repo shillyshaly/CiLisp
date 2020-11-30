@@ -15,7 +15,7 @@
 
 %token <ival> FUNC TYPE
 %token <dval> INT DOUBLE
-%token QUIT EOL EOFT LPAREN RPAREN LET
+%token QUIT EOL EOFT LPAREN RPAREN LET COND
 %token <sval> SYMBOL
 
 %type <astNode> s_expr s_expr_section s_expr_list f_expr number
@@ -66,6 +66,10 @@ s_expr:
     | LPAREN let_section s_expr RPAREN {
     	ylog(s_expr, LPAREN let_section s_expr RPAREN);
     	$$ = createScopeNode($2, $3);
+    }
+    | LPAREN COND s_expr s_expr s_expr RPAREN {
+    	ylog(s_expr, LPAREN COND s_expr s_expr s_expr RPAREN);
+
     }
     | QUIT {
         ylog(s_expr, QUIT);
