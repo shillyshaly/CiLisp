@@ -81,7 +81,6 @@ typedef struct ast_function {
     struct ast_node *opList;
 } AST_FUNCTION;
 
-// task2 : add new node types sym and scope
 typedef enum ast_node_type {
     NUM_NODE_TYPE,
     FUNC_NODE_TYPE,
@@ -90,7 +89,6 @@ typedef enum ast_node_type {
     COND_TYPE
 } AST_NODE_TYPE;
 
-// task2 : add structs for symbol and scope from readMe
 typedef struct {
     char* id;
 } AST_SYMBOL;
@@ -120,9 +118,6 @@ typedef struct ast_node {
     struct ast_node *next;
 } AST_NODE;
 
-/* task2 : linked list of symbols in each scope to
-** keep track of the symbol names alongside their values
-*/
  typedef struct symbol_table_node {
     NUM_TYPE type;
     char *id;

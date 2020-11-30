@@ -243,6 +243,7 @@ RET_VAL evalRead(){
         //return duck-typed
     //else
         //print warning, return NAN_
+    read_target = fopen("../inputs/task_4_read_target.txt", "r");
 
     return result;
 }
