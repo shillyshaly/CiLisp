@@ -1,3 +1,4 @@
+((let (double a 5)) a)
+((let (int a 5)) a)
 ((let (int a 1.25))(add a 1))
-(read)
 quit

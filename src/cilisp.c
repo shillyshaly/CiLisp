@@ -106,7 +106,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) { //2//7
     size_t nodeSize;
 
     nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL) {
+    if ((node = calloc(nodeSize, 1)) == NULL) { //super leaks
         yyerror("Memory allocation failed!");
         exit(1);
     }
@@ -131,11 +131,17 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {//10
         exit(1);
     }
 
+
     // TODO complete the function
     // Populate the allocated AST_NODE *node's data
     node->type = FUNC_NODE_TYPE;
     node->data.function.opList = opList;
     node->data.function.func = func;
+
+    while (opList){
+        opList->parent = node;
+        opList = opList->next;
+    }
 
     return node;
 }
@@ -157,7 +163,6 @@ AST_NODE *createSymbolNode(char *id){//6
     }
     node->type = SYM_NODE_TYPE;
     node->data.symbol.id = id;
-
 
     return node;
 }
@@ -186,7 +191,29 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
 }
 //TODO 3- linking "symbol table nodes" together into linked lists
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
+    SYMBOL_TABLE_NODE *currNode;
+    SYMBOL_TABLE_NODE *temp;
+
+    currNode = symTblList;
+
+    while (currNode){
+
+        if (strcmp(newExpr->id, currNode->id) == 0){
+            if (currNode == symTblList){
+                symTblList = symTblList->next;
+                freeStNode(currNode);
+            } else {
+                temp->next = currNode->next;
+                freeNode((AST_NODE *) currNode);
+            }
+            break;
+        }
+        temp = currNode;
+        currNode = currNode->next;
+    }
+
     newExpr->next = symTblList;
+
     return newExpr;
 }
 //TODO 3- linking "symbol table node linked lists" into a node  whose scope they are in
@@ -195,24 +222,26 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     size_t nodeSize;
 
     nodeSize = sizeof(SYMBOL_TABLE_NODE);
-    if ((stNode = calloc(nodeSize, 1)) == NULL) {
+    if ((stNode = calloc(nodeSize, 1)) == NULL) { //leaky lots
         yyerror("Memory allocation failed!");
         exit(1);
     }
 
-    stNode->type = type;
 
     if ((type == INT_TYPE) && (eval(value).type == DOUBLE_TYPE)){
         warning("Precision loss on int cast from %f to %d.",value->data.number.value, (int )value->data.number.value);
-        value->data.number.value = (int)value->data.number.value;
+        value->data.number.type = INT_TYPE;
+    }
+    if (type == DOUBLE_TYPE){
+        value->data.number.type = DOUBLE_TYPE;
     }
 
+    stNode->type = type;
     stNode->id = id;
     stNode->value = value;
 
     return stNode;
 }
-
 
 ///
 /// start list of op functions
@@ -231,21 +260,15 @@ RET_VAL evalRand(){
 }
 //TODO 4
 RET_VAL evalRead(){
-    RET_VAL result;
-    //print read to stdout
-    printf("read :: ");
-    //get response from read_target file
-    //if second arg
-        //read from file
-    // else
-        //read from console
-    //if int/double
-        //return duck-typed
-    //else
-        //print warning, return NAN_
-    read_target = fopen("../inputs/task_4_read_target.txt", "r");
+    int len = 10;
+    char buf[len];
 
-    return result;
+    if (read_target == stdin){
+        printf("read :: ");
+        fgets(buf, len, stdin);
+    }
+    //loop through letter???
+
 }
 /*
  * unary functions
@@ -886,6 +909,8 @@ RET_VAL eval(AST_NODE *node) {//4//12//14//15
             return evalSymbolNode(node);
         case SCOPE_NODE_TYPE:
             return evalScopeNode(node);
+        case COND_TYPE:
+            break;
     }
 }
 
@@ -904,13 +929,45 @@ void printRetVal(RET_VAL val) {
     }
 }
 
-//TODO - UPDATE
-void freeFuncNode(AST_NODE *node) {
-    if (!node) {
+///FREEEEEEEE
+
+//void freeFuncNode(AST_FUNCTION *node) {
+//    if (!node) {
+//        return;
+//    }
+//    free(node);
+//}
+//void freeSymNode(AST_NODE *node){
+//    if (!node) {
+//        return;
+//    }
+//    free(node->data.symbol.id);
+//}
+
+void freeScopeNode(AST_NODE *node){
+    if (!node){
         return;
     }
-    free(node->data.function.opList);
+    freeNode(node->data.scope.child);
+}
 
+void freeCond(AST_NODE *node){
+    if (!node){
+        return;
+    }
+
+}
+
+void freeStNode(SYMBOL_TABLE_NODE *stNode){
+    if (!stNode){
+        return;
+    }
+    SYMBOL_TABLE_NODE *temp;
+    temp = stNode;
+
+    free(stNode->id);
+    freeNode(stNode->value);
+    free(stNode);
 }
 
 //TODO - UPDATE
@@ -930,11 +987,23 @@ void freeNode(AST_NODE *node) {
     // to free as well (but this should probably be done in
     // a call to another function, named something like
     // freeFunctionNode)
-    freeNode(node->next);
 
-    if (node->type == FUNC_NODE_TYPE) {
-        freeFuncNode(node);
+    if (node->symbolTable != NULL){
+        freeStNode(node->symbolTable);
     }
+
+    switch (node->type) {
+        case FUNC_NODE_TYPE:
+            freeNode(node->data.function.opList);
+            break;
+        case SYM_NODE_TYPE:
+            free(node->data.scope.child);
+            break;
+        case SCOPE_NODE_TYPE:
+            freeNode(node->data.scope.child);
+            break;
+    }
+    freeNode(node->next);
 
     // and, finally,
     free(node);
