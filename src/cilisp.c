@@ -5,6 +5,7 @@
 **/
 #include "cilisp.h"
 #include "math.h"
+#include <ctype.h>
 
 #define RED             "\033[31m"
 #define RESET_COLOR     "\033[0m"
@@ -151,7 +152,6 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {//8//9
     return newExpr;
 }
 
-//TODO 3- create a symbol node
 AST_NODE *createSymbolNode(char *id){//6
     AST_NODE *node;
     size_t nodeSize;
@@ -166,7 +166,7 @@ AST_NODE *createSymbolNode(char *id){//6
 
     return node;
 }
-//TODO 3- create a scope node
+
 AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     AST_NODE *node;
     size_t nodeSize;
@@ -189,7 +189,7 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
 
     return node;
 }
-//TODO 3- linking "symbol table nodes" together into linked lists
+
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
     SYMBOL_TABLE_NODE *currNode;
     SYMBOL_TABLE_NODE *temp;
@@ -216,7 +216,7 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
 
     return newExpr;
 }
-//TODO 3- linking "symbol table node linked lists" into a node  whose scope they are in
+
 SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
@@ -225,15 +225,6 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     if ((stNode = calloc(nodeSize, 1)) == NULL) { //leaky lots
         yyerror("Memory allocation failed!");
         exit(1);
-    }
-
-
-    if ((type == INT_TYPE) && (eval(value).type == DOUBLE_TYPE)){
-        warning("Precision loss on int cast from %f to %d.",value->data.number.value, (int )value->data.number.value);
-        value->data.number.type = INT_TYPE;
-    }
-    if (type == DOUBLE_TYPE){
-        value->data.number.type = DOUBLE_TYPE;
     }
 
     stNode->type = type;
@@ -249,7 +240,7 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
 /*
  * no arguments
  **/
-//TODO 4 - ???
+//TODO 4 - DONE
 RET_VAL evalRand(){
     RET_VAL result;
 
@@ -258,16 +249,38 @@ RET_VAL evalRand(){
 
     return result;
 }
-//TODO 4
+//TODO 4 - debug and finish read
 RET_VAL evalRead(){
-    int len = 10;
-    char buf[len];
+    int size = 12;
+    char in[size];
 
     if (read_target == stdin){
-        printf("read :: ");
-        fgets(buf, len, stdin);
+        printf("%s", "read :: ");
     }
-    //loop through letter???
+    fscanf(read_target, "%[^\n\r]", in);
+
+    bool isDub = false;
+    for (int i = 0; i < strlen(in); i++) {
+        if (isalpha(in[i])){
+            warning("Invalid read entry! NAN returned!");
+            return NAN_RET_VAL;
+        }
+        if (in[i] == '.'){
+            isDub = true;
+        }
+    }
+
+    RET_VAL result;
+
+    if (isDub){
+        result.type = DOUBLE_TYPE;
+        result.value = strtod(in, NULL);
+    } else{
+        result.type = INT_TYPE;
+        result.value = strtod(in, NULL);
+    }
+
+    return result;
 
 }
 /*
@@ -419,7 +432,7 @@ RET_VAL evalCbrt(AST_NODE *op) {
 
     return result;
 }
-//TODO 4 - ???
+//TODO 4 - DONE
 RET_VAL evalPrint(AST_NODE *op){
     RET_VAL result;
 
@@ -485,7 +498,12 @@ RET_VAL evalDiv(AST_NODE *op) {
 
     result2 = eval(op);
 
-    result.value = (int)(result.value / result2.value);
+    if (result.type == INT_TYPE && result2.type == INT_TYPE){
+        result.value = (int)(result.value / result2.value);
+    }else{
+        result.value = result.value / result2.value;
+    }
+
 
     return result;
 }
@@ -538,7 +556,7 @@ RET_VAL evalPow(AST_NODE *op) {
 
     return result;
 }
-//TODO 4 - ???
+//TODO 4 - DONE
 RET_VAL evalEqual(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -573,7 +591,7 @@ RET_VAL evalEqual(AST_NODE *op){
 
     return result;
 }
-//TODO 4 - ???
+//TODO 4 - DONE
 RET_VAL evalLess(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -608,7 +626,7 @@ RET_VAL evalLess(AST_NODE *op){
 
     return result;
 }
-//TODO 4 - ???
+//TODO 4 - DONE
 RET_VAL evalGreater(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -848,8 +866,6 @@ RET_VAL evalNumNode(AST_NODE *node) {
     return *result;
 }
 
-/// eval functions for symbol and scope
-//TODO 3 - ???
 RET_VAL evalSymbolNode(AST_NODE *node){//16
     AST_NODE *currScope;
     SYMBOL_TABLE_NODE *stNode;
@@ -862,12 +878,19 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
 
     while (currScope){
 
-        stNode = node->symbolTable;
+        stNode = currScope->symbolTable;
 
         while (stNode){
 
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
+
+                    if (stNode->type == INT_TYPE){
+                        warning("Precision loss on int cast from %f to %d.",stNode->value->data.number.value, (int )stNode->value->data.number.value);
+                        result.type = INT_TYPE;
+                    }else{
+                        result.type = DOUBLE_TYPE;
+                    }
 
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
@@ -883,16 +906,37 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
     return NAN_RET_VAL;
 }
 
-//TODO 3 - ???
 RET_VAL evalScopeNode(AST_NODE *node){//13
     if (!node) {
-        yyerror("NULL ast node passed into evalSymbolNode!");
+        yyerror("NULL ast node passed into evalScopeNode!");
         return NAN_RET_VAL;
     }
     return eval(node->data.scope.child);
 }
 
-//TODO 3 - add switches for scope and symbol
+//TODO 4 - DONE
+RET_VAL evalCond(AST_NODE *node){
+    if (!node) {
+        yyerror("NULL ast node passed into evalScopeNode!");
+        return NAN_RET_VAL;
+    }
+    RET_VAL result;
+    AST_COND temp = node->data.condition;
+
+    createCondNode(temp.condition, temp.trueCase, temp.falseCase);
+
+    return result;
+}
+//TODO 4 - DONE
+AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond){
+    AST_NODE *result;
+
+    result = (condition->data.number.value != 0) ? trueCond : falseCond;
+
+    return result;
+}
+
+//TODO 4 - DONE
 RET_VAL eval(AST_NODE *node) {//4//12//14//15
     if (!node) {
         yyerror("NULL ast node passed into eval!");
@@ -910,7 +954,7 @@ RET_VAL eval(AST_NODE *node) {//4//12//14//15
         case SCOPE_NODE_TYPE:
             return evalScopeNode(node);
         case COND_TYPE:
-            break;
+            return evalCond(node);
     }
 }
 

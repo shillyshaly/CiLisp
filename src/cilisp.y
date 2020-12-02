@@ -69,7 +69,7 @@ s_expr:
     }
     | LPAREN COND s_expr s_expr s_expr RPAREN {
     	ylog(s_expr, LPAREN COND s_expr s_expr s_expr RPAREN);
-
+    	$$ = createCondNode($3, $4, $5);
     }
     | QUIT {
         ylog(s_expr, QUIT);
