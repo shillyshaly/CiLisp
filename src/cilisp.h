@@ -148,7 +148,6 @@ RET_VAL evalCond(AST_NODE *node);
 void printRetVal(RET_VAL val);
 
 void freeNode(AST_NODE *node);
-
 void freeStNode(SYMBOL_TABLE_NODE *node);
 //void freeSymNode(AST_FUNCTION *node);
 //void freeScopeNode(AST_NODE *node);

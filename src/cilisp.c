@@ -227,9 +227,21 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
         exit(1);
     }
 
-    stNode->type = type;
     stNode->id = id;
     stNode->value = value;
+    stNode->type = type;
+
+    if (type == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
+        warning("Precision loss on int cast from %f to %d.", value->data.number.value,
+                (int) value->data.number.value);
+        value->data.number.type = INT_TYPE;
+        stNode->type = INT_TYPE;
+        value->data.number.value = (int) value->data.number.value;
+        stNode->value = value;
+    }
+    if (type == DOUBLE_TYPE){
+        stNode->type = DOUBLE_TYPE;
+    }
 
     return stNode;
 }
@@ -252,20 +264,21 @@ RET_VAL evalRand(){
 //TODO 4 - debug and finish read
 RET_VAL evalRead(){
     int size = 12;
-    char in[size];
+    char buff[size];
 
-    if (read_target == stdin){
-        printf("%s", "read :: ");
+    if (read_target != stdin){
+        printf("read :: ");
     }
-    fscanf(read_target, "%[^\n\r]", in);
+
+    fscanf(read_target, "%[^\n\r]", buff);
 
     bool isDub = false;
-    for (int i = 0; i < strlen(in); i++) {
-        if (isalpha(in[i])){
+    for (int i = 0; i < strlen(buff); i++) {
+        if (isalpha(buff[i])){
             warning("Invalid read entry! NAN returned!");
             return NAN_RET_VAL;
         }
-        if (in[i] == '.'){
+        if (buff[i] == '.'){
             isDub = true;
         }
     }
@@ -274,14 +287,13 @@ RET_VAL evalRead(){
 
     if (isDub){
         result.type = DOUBLE_TYPE;
-        result.value = strtod(in, NULL);
+        result.value = strtod(buff, NULL);
     } else{
         result.type = INT_TYPE;
-        result.value = strtod(in, NULL);
+        result.value = strtod(buff, NULL);
     }
 
     return result;
-
 }
 /*
  * unary functions
@@ -474,9 +486,13 @@ RET_VAL evalSub(AST_NODE *op) {
 
 
     result2 = eval(op);
-    result.value = result.value - result2.value;
+    result2.value = result.value - result2.value;
+    if (result.type == DOUBLE_TYPE || result2.type == DOUBLE_TYPE){
+        result2.type = DOUBLE_TYPE;
+    }
 
-    return result;
+
+    return result2;
 }
 
 RET_VAL evalDiv(AST_NODE *op) {
@@ -502,6 +518,7 @@ RET_VAL evalDiv(AST_NODE *op) {
         result.value = (int)(result.value / result2.value);
     }else{
         result.value = result.value / result2.value;
+        result.type = DOUBLE_TYPE;
     }
 
 
@@ -886,12 +903,10 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
                 RET_VAL result = eval(stNode->value);
 
                     if (stNode->type == INT_TYPE){
-                        warning("Precision loss on int cast from %f to %d.",stNode->value->data.number.value, (int )stNode->value->data.number.value);
                         result.type = INT_TYPE;
                     }else{
                         result.type = DOUBLE_TYPE;
                     }
-
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
                     stNode->value = createNumberNode(result.value, result.type);
@@ -973,20 +988,24 @@ void printRetVal(RET_VAL val) {
     }
 }
 
-///FREEEEEEEE
+/**
+/// FREEEEEEEE SECTION
+**/
 
-//void freeFuncNode(AST_FUNCTION *node) {
-//    if (!node) {
-//        return;
-//    }
-//    free(node);
-//}
-//void freeSymNode(AST_NODE *node){
-//    if (!node) {
-//        return;
-//    }
-//    free(node->data.symbol.id);
-//}
+void freeFuncNode(AST_NODE *node) {
+    if (!node) {
+        return;
+    }
+    freeNode(node->data.function.opList);
+}
+
+void freeSymNode(AST_NODE *node){
+    if (!node) {
+        return;
+    }
+    free(node->data.symbol.id);
+    freeNode(node->next);
+}
 
 void freeScopeNode(AST_NODE *node){
     if (!node){
@@ -999,18 +1018,16 @@ void freeCond(AST_NODE *node){
     if (!node){
         return;
     }
-
 }
 
 void freeStNode(SYMBOL_TABLE_NODE *stNode){
     if (!stNode){
         return;
     }
-    SYMBOL_TABLE_NODE *temp;
-    temp = stNode;
 
     free(stNode->id);
     freeNode(stNode->value);
+    freeStNode(stNode->next);
     free(stNode);
 }
 
@@ -1038,10 +1055,10 @@ void freeNode(AST_NODE *node) {
 
     switch (node->type) {
         case FUNC_NODE_TYPE:
-            freeNode(node->data.function.opList);
+            freeFuncNode(node);
             break;
         case SYM_NODE_TYPE:
-            free(node->data.scope.child);
+            free(node->data.symbol.id);
             break;
         case SCOPE_NODE_TYPE:
             freeNode(node->data.scope.child);
