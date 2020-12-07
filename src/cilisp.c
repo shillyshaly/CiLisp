@@ -234,13 +234,6 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     if (type == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
         warning("Precision loss on int cast from %f to %d.", value->data.number.value,
                 (int) value->data.number.value);
-//        value->data.number.type = INT_TYPE;
-        stNode->type = INT_TYPE;
-        value->data.number.value = (int) value->data.number.value;
-        stNode->value = value;
-    }
-    if (type == DOUBLE_TYPE){
-        stNode->type = DOUBLE_TYPE;
     }
 
     return stNode;
@@ -256,8 +249,7 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
 RET_VAL evalRand(){
     RET_VAL result;
 
-    srand(rand());
-    result.value = (rand()/(double)RAND_MAX);
+    result.value = (rand() + 1.0) / (RAND_MAX+2.0);;
 
     return result;
 }
@@ -899,6 +891,12 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
 
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
+
+                if (stNode->type == INT_TYPE){
+                    result.type = INT_TYPE;
+                }else if(stNode->type == DOUBLE_TYPE){
+                    result.type = DOUBLE_TYPE;
+                }
 
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
