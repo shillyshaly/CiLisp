@@ -234,7 +234,7 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
     if (type == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
         warning("Precision loss on int cast from %f to %d.", value->data.number.value,
                 (int) value->data.number.value);
-        value->data.number.type = INT_TYPE;
+//        value->data.number.type = INT_TYPE;
         stNode->type = INT_TYPE;
         value->data.number.value = (int) value->data.number.value;
         stNode->value = value;
@@ -261,16 +261,16 @@ RET_VAL evalRand(){
 
     return result;
 }
-//TODO 4 - debug and finish read
+//TODO 4 - DONE
 RET_VAL evalRead(){
+    RET_VAL result;
     int size = 12;
     char buff[size];
 
+    printf("read :: ");
     if (read_target != stdin){
-        printf("read :: ");
     }
-
-    fscanf(read_target, "%[^\n\r]", buff);
+    fgets(buff, size, read_target);
 
     bool isDub = false;
     for (int i = 0; i < strlen(buff); i++) {
@@ -282,8 +282,6 @@ RET_VAL evalRead(){
             isDub = true;
         }
     }
-
-    RET_VAL result;
 
     if (isDub){
         result.type = DOUBLE_TYPE;
@@ -902,11 +900,6 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
 
-                    if (stNode->type == INT_TYPE){
-                        result.type = INT_TYPE;
-                    }else{
-                        result.type = DOUBLE_TYPE;
-                    }
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
                     stNode->value = createNumberNode(result.value, result.type);
