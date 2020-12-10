@@ -93,6 +93,12 @@ typedef struct {
     char* id;
 } AST_SYMBOL;
 
+//TODO 5 - add symbol types - DONE
+typedef enum {
+    VAR_TYPE,
+    LAMBDA_TYPE,
+    ARG_TYPE
+}SYMBOL_TYPE;
 
 typedef struct {
     struct ast_node *child;
@@ -118,24 +124,36 @@ typedef struct ast_node {
     struct ast_node *next;
 } AST_NODE;
 
+//TODO 5 - change to include extra arg stuff - DONE
  typedef struct symbol_table_node {
-    NUM_TYPE type;
-    char *id;
-    AST_NODE *value;
+     char *id;
+     AST_NODE *value;
+     NUM_TYPE type;
+     SYMBOL_TYPE symbolType;
+     struct stack_node *stack;
     struct symbol_table_node *next;
 } SYMBOL_TABLE_NODE;
 
+//TODO 5 - create a stack node for vars - DONE
+typedef struct stack_node {
+    RET_VAL value;
+    struct stack_node *next;
+}STACK_NODE;
 
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList);
+//TODO - ???
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, SYMBOL_TABLE_NODE *stack);
 AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
 //need to add some functions for task2
 AST_NODE *createSymbolNode(char *id);
 AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child);
 AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond);
-
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value);
+//TODO - add stNode for task 5 to createStNode - ???
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value, SYMBOL_TABLE_NODE *arg_list);
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
+
+//TODO 5 - addto arglist,
+STACK_NODE *addToArgList(AST_NODE *arg, STACK_NODE *argList);
 
 NUM_TYPE resolveNumType(char *type);
 
@@ -144,6 +162,12 @@ RET_VAL eval(AST_NODE *node);
 RET_VAL evalSymbolNode(AST_NODE *node);
 RET_VAL evalScopeNode(AST_NODE *node);
 RET_VAL evalCond(AST_NODE *node);
+//TODO - ADD eval for customFunc
+RET_VAL evalCustom(AST_NODE *node);
+
+//random shit
+STACK_NODE *createStackNode(RET_VAL value);
+STACK_NODE *addStackNodetoList(RET_VAL value, STACK_NODE *list);
 
 void printRetVal(RET_VAL val);
 

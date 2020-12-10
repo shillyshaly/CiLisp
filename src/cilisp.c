@@ -122,7 +122,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) { //2//7
     return node;
 }
 
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList) {//10
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, SYMBOL_TABLE_NODE *stack) {//10
     AST_NODE *node;
     size_t nodeSize;
 
@@ -199,6 +199,7 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
     while (currNode){
 
         if (strcmp(newExpr->id, currNode->id) == 0){
+            warning("Duplicate assignment");
             if (currNode == symTblList){
                 symTblList = symTblList->next;
                 freeStNode(currNode);
@@ -217,7 +218,7 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
     return newExpr;
 }
 
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value, SYMBOL_TABLE_NODE *arg_list) {//3
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
 
@@ -238,6 +239,41 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
 
     return stNode;
 }
+//TODO 5 - change stuff
+STACK_NODE *addToArgList(AST_NODE *arg, STACK_NODE *argList){
+    STACK_NODE *node;
+    size_t nodeSize;
+    nodeSize = sizeof(STACK_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) { //leaky lots
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    RET_VAL value = eval(arg);
+    node->value = value;
+    node->next = argList;
+    return node;
+}
+// TODO 5 - addStackNode to list
+STACK_NODE *addStackNodetoList(RET_VAL value, STACK_NODE *list){
+    STACK_NODE *node = createStackNode(value);
+
+    node->next = list;
+    return node;
+}
+STACK_NODE *createStackNode(RET_VAL value){
+    STACK_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(STACK_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) { //leaky lots
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    node->value = value;
+    return node;
+}
 
 ///
 /// start list of op functions
@@ -245,7 +281,6 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value) {//3
 /*
  * no arguments
  **/
-//TODO 4 - DONE
 RET_VAL evalRand(){
     RET_VAL result;
 
@@ -253,7 +288,7 @@ RET_VAL evalRand(){
 
     return result;
 }
-//TODO 4 - DONE
+
 RET_VAL evalRead(){
     RET_VAL result;
     int size = 12;
@@ -434,7 +469,7 @@ RET_VAL evalCbrt(AST_NODE *op) {
 
     return result;
 }
-//TODO 4 - DONE
+
 RET_VAL evalPrint(AST_NODE *op){
     RET_VAL result;
 
@@ -563,7 +598,7 @@ RET_VAL evalPow(AST_NODE *op) {
 
     return result;
 }
-//TODO 4 - DONE
+
 RET_VAL evalEqual(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -598,7 +633,7 @@ RET_VAL evalEqual(AST_NODE *op){
 
     return result;
 }
-//TODO 4 - DONE
+
 RET_VAL evalLess(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -633,7 +668,7 @@ RET_VAL evalLess(AST_NODE *op){
 
     return result;
 }
-//TODO 4 - DONE
+
 RET_VAL evalGreater(AST_NODE *op){
     //check for binary
     RET_VAL result;
@@ -855,7 +890,7 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case MIN_FUNC:
             return evalMin(node->data.function.opList);
         case CUSTOM_FUNC:
-            break;
+            return evalCustom(node->data.function.opList);
     }
 }
 
@@ -920,7 +955,6 @@ RET_VAL evalScopeNode(AST_NODE *node){//13
     return eval(node->data.scope.child);
 }
 
-//TODO 4 - DONE
 RET_VAL evalCond(AST_NODE *node){
     if (!node) {
         yyerror("NULL ast node passed into evalScopeNode!");
@@ -933,7 +967,6 @@ RET_VAL evalCond(AST_NODE *node){
 
     return result;
 }
-//TODO 4 - DONE
 AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond){
     AST_NODE *result;
 
@@ -942,7 +975,55 @@ AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *fals
     return result;
 }
 
-//TODO 4 - DONE
+//TODO - TASK 5 eval for custom
+RET_VAL evalCustom(AST_NODE *node){
+    AST_NODE *opList = node->data.function.opList;
+    if (!node) {
+        yyerror("NULL ast node passed into evalCustom!");
+        return NAN_RET_VAL;
+    }
+    bool hasVar = false;
+    SYMBOL_TABLE_NODE *symbolTableNode;
+    if (node->symbolTable){
+        symbolTableNode = node->symbolTable;
+    }else {
+        symbolTableNode = node->symbolTable->value->symbolTable;
+        hasVar = true;
+    }
+
+    RET_VAL op1 = eval(opList);
+    opList = opList->next;
+    RET_VAL op2 = eval(opList);
+
+    STACK_NODE *stackNode = createStackNode(op2);
+    stackNode = addStackNodetoList(op1, stackNode);
+
+    while (symbolTableNode){
+        symbolTableNode->stack = stackNode;
+        symbolTableNode = symbolTableNode->next;
+    }
+
+    RET_VAL result = NAN_RET_VAL;
+
+//    if (hasVar){
+//        result = eval();
+//    }else {
+//        result = eval(node->symbolTable->value);
+//    }
+    result = eval(node->symbolTable->value);
+
+    if (node->symbolTable->type != NO_TYPE){
+        if (node->symbolTable->type != INT_TYPE){
+            warning("WARNING: Precision lost");
+        }
+        result.type = node->symbolTable->type;
+    }
+
+    return NAN_RET_VAL;
+
+}
+
+
 RET_VAL eval(AST_NODE *node) {//4//12//14//15
     if (!node) {
         yyerror("NULL ast node passed into eval!");
@@ -964,7 +1045,6 @@ RET_VAL eval(AST_NODE *node) {//4//12//14//15
     }
 }
 
-// prints the type and value of a RET_VAL
 void printRetVal(RET_VAL val) {
     switch (val.type) {
         case INT_TYPE:
