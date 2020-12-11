@@ -192,7 +192,7 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child) {//11
         child->symbolTable = stNode;
     }
 
-    while (stNode) {
+    while (stNode && stNode->value) {
         stNode->value->parent = child;
         stNode = stNode->next;
     }
@@ -863,7 +863,7 @@ STACK_NODE *createStackNode(RET_VAL value, STACK_NODE *list) {
 
 //TODO - make evalCutom function
 RET_VAL evalCustom(AST_NODE *op) {
-    AST_NODE *opList = op->data.function.opList;
+    AST_NODE *opList = op->parent->data.function.opList;
     RET_VAL result;
 
     if (opList == NULL) {
@@ -968,7 +968,7 @@ RET_VAL evalFuncNode(AST_NODE *node) {
         case MIN_FUNC:
             return evalMin(node->data.function.opList);
         case CUSTOM_FUNC:
-            return evalCustom(node->data.function.opList);
+            return evalCustom(node);
     }
 }
 

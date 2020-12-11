@@ -68,7 +68,10 @@ TASK 5:
 -broke a lot of functionality trying to fix things.  had to restart some parts.
 
 BUGS:
-+seg faults in scope node
++seg faults in scope node for anything from check5
+    --got it to at least finish the run
 +so far, first line of task_5 causes seg fault.
++broke it again.
+    --stNode->value->parent = child; value is empty when it gets here.
 +now valgrind really blows up. now there is also a syscallParam.  maybe I need to malloc the buffer, then
     free it after?
