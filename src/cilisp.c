@@ -97,11 +97,13 @@ FUNC_TYPE resolveFunc(char *funcName) {//5
 NUM_TYPE resolveNumType(char *type){ //1
     if (strcmp(type, "int") == 0) {
         return INT_TYPE;
-    }else {
+    }else if(strcmp(type, "double") == 0) {
         return DOUBLE_TYPE;
     }
+    return NO_TYPE;
 }
 
+/// create functions
 AST_NODE *createNumberNode(double value, NUM_TYPE type) { //2//7
     AST_NODE *node;
     size_t nodeSize;
@@ -122,7 +124,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type) { //2//7
     return node;
 }
 
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, SYMBOL_TABLE_NODE *stack) {//10
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, char *name) {//10
     AST_NODE *node;
     size_t nodeSize;
 
@@ -138,18 +140,17 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, SYMBOL_TABLE_NODE
     node->type = FUNC_NODE_TYPE;
     node->data.function.opList = opList;
     node->data.function.func = func;
+    node->data.function.id = name;
+//    node->parent = NULL;
 
     while (opList){
         opList->parent = node;
         opList = opList->next;
     }
+    node->symbolTable = NULL;
+    node->next = NULL;
 
     return node;
-}
-
-AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {//8//9
-    newExpr->next = exprList;
-    return newExpr;
 }
 
 AST_NODE *createSymbolNode(char *id){//6
@@ -163,6 +164,10 @@ AST_NODE *createSymbolNode(char *id){//6
     }
     node->type = SYM_NODE_TYPE;
     node->data.symbol.id = id;
+    node->data.symbol.numType = NO_TYPE;
+//    node->symbolTable = NULL;
+//    node->parent = NULL;
+//    node->next = NULL;
 
     return node;
 }
@@ -180,8 +185,12 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     node->type = SCOPE_NODE_TYPE;
     node->data.scope.child = child;
     child->parent = node;
-    child->symbolTable = stNode;
 
+    if (stNode->symbolType == LAMBDA_TYPE){
+        child->argList = stNode;
+    }else {
+        child->symbolTable = stNode;
+    }
     while (stNode){
         stNode->value->parent = child;
         stNode = stNode->next;
@@ -190,6 +199,56 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     return node;
 }
 
+AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond){
+    AST_NODE *result;
+
+    result = (condition->data.number.value != 0) ? trueCond : falseCond;
+
+    return result;
+}
+
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist) {//3
+    SYMBOL_TABLE_NODE *stNode;
+    size_t nodeSize;
+
+    nodeSize = sizeof(SYMBOL_TABLE_NODE);
+    if ((stNode = calloc(nodeSize, 1)) == NULL) { //leaky lots
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+
+    stNode->id = id;
+    stNode->value = value;
+    stNode->numType = numType;
+    stNode->symbolType = symbolType;
+
+    if (numType == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
+        warning("Precision loss on int cast from %f to %d.", value->data.number.value,
+                (int) value->data.number.value);
+    }
+
+    if (stNode->value){
+        if (symbolType == LAMBDA_TYPE){
+            stNode->value->argList = arglist;
+        }
+        if (stNode->value->type == SYM_NODE_TYPE){
+            stNode->value->symbolTable->numType = numType;
+        }
+    }
+
+    stNode->stack = NULL;
+
+    if (arglist){
+        stNode->next = arglist;
+    }else {
+        stNode->next = NULL;
+    }
+
+    return stNode;
+}
+/// end create functions
+
+/// addTo functions
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList) {
     SYMBOL_TABLE_NODE *currNode;
     SYMBOL_TABLE_NODE *temp;
@@ -199,7 +258,6 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
     while (currNode){
 
         if (strcmp(newExpr->id, currNode->id) == 0){
-            warning("Duplicate assignment");
             if (currNode == symTblList){
                 symTblList = symTblList->next;
                 freeStNode(currNode);
@@ -218,73 +276,20 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
     return newExpr;
 }
 
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value, SYMBOL_TABLE_NODE *arg_list) {//3
-    SYMBOL_TABLE_NODE *stNode;
-    size_t nodeSize;
-
-    nodeSize = sizeof(SYMBOL_TABLE_NODE);
-    if ((stNode = calloc(nodeSize, 1)) == NULL) { //leaky lots
-        yyerror("Memory allocation failed!");
-        exit(1);
-    }
-
-    stNode->id = id;
-    stNode->value = value;
-    stNode->type = type;
-
-    if (type == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
-        warning("Precision loss on int cast from %f to %d.", value->data.number.value,
-                (int) value->data.number.value);
-    }
-
-    return stNode;
+AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {//8//9
+    newExpr->next = exprList;
+    return newExpr;
 }
-//TODO 5 - change stuff
-STACK_NODE *addToArgList(AST_NODE *arg, STACK_NODE *argList){
-    STACK_NODE *node;
-    size_t nodeSize;
-    nodeSize = sizeof(STACK_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL) { //leaky lots
-        yyerror("Memory allocation failed!");
-        exit(1);
-    }
+///end addTo functions
 
-    RET_VAL value = eval(arg);
-    node->value = value;
-    node->next = argList;
-    return node;
-}
-// TODO 5 - addStackNode to list
-STACK_NODE *addStackNodetoList(RET_VAL value, STACK_NODE *list){
-    STACK_NODE *node = createStackNode(value);
-
-    node->next = list;
-    return node;
-}
-STACK_NODE *createStackNode(RET_VAL value){
-    STACK_NODE *node;
-    size_t nodeSize;
-
-    nodeSize = sizeof(STACK_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL) { //leaky lots
-        yyerror("Memory allocation failed!");
-        exit(1);
-    }
-
-    node->value = value;
-    return node;
-}
-
-///
 /// start list of op functions
-///
 /*
  * no arguments
  **/
 RET_VAL evalRand(){
     RET_VAL result;
 
-    result.value = (rand() + 1.0) / (RAND_MAX+2.0);;
+    result.value = (rand() + 1.0) / (RAND_MAX+2.0);
 
     return result;
 }
@@ -603,7 +608,7 @@ RET_VAL evalEqual(AST_NODE *op){
     //check for binary
     RET_VAL result;
     RET_VAL result2;
-    int output= 0;
+    int output;
 
     if (op == NULL || op->next == NULL) {
         warning("Too few arguments in sub.");
@@ -623,8 +628,8 @@ RET_VAL evalEqual(AST_NODE *op){
         //return int value 1
         output = 1;
         result.value = output;
-        }
-    //else
+    }
+        //else
     else{
         //return 0
         output = 0;
@@ -638,7 +643,7 @@ RET_VAL evalLess(AST_NODE *op){
     //check for binary
     RET_VAL result;
     RET_VAL result2;
-    int output= 0;
+    int output;
 
     if (op == NULL || op->next == NULL) {
         warning("Too few arguments in sub.");
@@ -673,7 +678,7 @@ RET_VAL evalGreater(AST_NODE *op){
     //check for binary
     RET_VAL result;
     RET_VAL result2;
-    int output= 0;
+    int output;
 
     if (op == NULL || op->next == NULL) {
         warning("Too few arguments in sub.");
@@ -826,10 +831,70 @@ RET_VAL evalMin(AST_NODE *op) {
 
     return result;
 }
-///
 ///  end list of op functions
-///
 
+
+
+///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
+
+//TODO 5 - create stack node function for lambdas - DONE
+STACK_NODE *createStackNode(RET_VAL value) {
+    STACK_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(STACK_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL) {
+        yyerror("Memory allocation failed!");
+        exit(1);
+    }
+    node->value = value;
+    node->next = NULL;
+
+    return node;
+}
+
+//SYMBOL_TABLE_NODE *resolveSymbolValue(AST_NODE *currScope, SYMBOL_TABLE_NODE *currNode, char *id) {
+//    SYMBOL_TABLE_NODE *symbol = NULL;
+//
+//    if (currNode != NULL) {
+//        if (strcmp(currNode->id, id) == 0) {
+//            symbol = currNode;
+//        } else {
+//            if (currNode->next != NULL) {
+//                symbol = resolveSymbolValue(currScope, currNode->next, id);
+//            }
+//            else if (currScope != NULL && currScope->parent != NULL) {
+//                symbol = resolveSymbolValue(currScope->parent, currScope->parent->symbolTable, id);
+//            }
+//            else {
+//                yyerror("Undefined symbol!");
+//            }
+//        }
+//    }
+////    else {
+////        //for when symbol table is empty but symbol exists in higher scope
+////        if (currScope != NULL && currScope->parent != NULL)
+////            symbol = resolveSymbolValue(currScope->parent, currScope->parent->symbolTable, id);
+////        else
+////            yyerror("Undefined symbol!");
+////    }
+//
+//    return symbol;
+//}
+
+//TODO - make evalCutom function
+RET_VAL evalCustom(AST_NODE *node){
+
+
+    return NAN_RET_VAL;
+}
+
+
+///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
+
+
+
+/// eval functions
 RET_VAL evalFuncNode(AST_NODE *node) {
     if (!node) {
         yyerror("NULL ast node passed into evalFuncNode!");
@@ -846,7 +911,7 @@ RET_VAL evalFuncNode(AST_NODE *node) {
             return evalRand();
         case READ_FUNC:
             return evalRead();
-        //unary
+            //unary
         case NEG_FUNC:
             return evalNeg(node->data.function.opList);
         case ABS_FUNC:
@@ -901,11 +966,11 @@ RET_VAL evalNumNode(AST_NODE *node) {
     }
 
     // TODO complete the function
-    RET_VAL *result = malloc(sizeof(RET_VAL));
-    result->value = node->data.number.value;
-    result->type = node->data.number.type;
+    RET_VAL result;
+    result.value = node->data.number.value;
+    result.type = node->data.number.type;
 
-    return *result;
+    return result;
 }
 
 RET_VAL evalSymbolNode(AST_NODE *node){//16
@@ -927,12 +992,18 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
             if (strcmp(stNode->id, node->data.symbol.id) == 0){
                 RET_VAL result = eval(stNode->value);
 
-                if (stNode->type == INT_TYPE){
+                if (stNode->numType == INT_TYPE){
                     result.type = INT_TYPE;
-                }else if(stNode->type == DOUBLE_TYPE){
+                }
+                if(stNode->numType == DOUBLE_TYPE){
                     result.type = DOUBLE_TYPE;
                 }
-
+                if (stNode->symbolType == VAR_TYPE){
+                    result = eval(stNode->value);
+                }
+                if (stNode->symbolType == ARG_TYPE){
+                    result = stNode->stack->value;
+                }
                 if (stNode->value->type != NUM_NODE_TYPE){
                     freeNode(stNode->value);
                     stNode->value = createNumberNode(result.value, result.type);
@@ -967,62 +1038,6 @@ RET_VAL evalCond(AST_NODE *node){
 
     return result;
 }
-AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond){
-    AST_NODE *result;
-
-    result = (condition->data.number.value != 0) ? trueCond : falseCond;
-
-    return result;
-}
-
-//TODO - TASK 5 eval for custom
-RET_VAL evalCustom(AST_NODE *node){
-    AST_NODE *opList = node->data.function.opList;
-    if (!node) {
-        yyerror("NULL ast node passed into evalCustom!");
-        return NAN_RET_VAL;
-    }
-    bool hasVar = false;
-    SYMBOL_TABLE_NODE *symbolTableNode;
-    if (node->symbolTable){
-        symbolTableNode = node->symbolTable;
-    }else {
-        symbolTableNode = node->symbolTable->value->symbolTable;
-        hasVar = true;
-    }
-
-    RET_VAL op1 = eval(opList);
-    opList = opList->next;
-    RET_VAL op2 = eval(opList);
-
-    STACK_NODE *stackNode = createStackNode(op2);
-    stackNode = addStackNodetoList(op1, stackNode);
-
-    while (symbolTableNode){
-        symbolTableNode->stack = stackNode;
-        symbolTableNode = symbolTableNode->next;
-    }
-
-    RET_VAL result = NAN_RET_VAL;
-
-//    if (hasVar){
-//        result = eval();
-//    }else {
-//        result = eval(node->symbolTable->value);
-//    }
-    result = eval(node->symbolTable->value);
-
-    if (node->symbolTable->type != NO_TYPE){
-        if (node->symbolTable->type != INT_TYPE){
-            warning("WARNING: Precision lost");
-        }
-        result.type = node->symbolTable->type;
-    }
-
-    return NAN_RET_VAL;
-
-}
-
 
 RET_VAL eval(AST_NODE *node) {//4//12//14//15
     if (!node) {
@@ -1044,7 +1059,10 @@ RET_VAL eval(AST_NODE *node) {//4//12//14//15
             return evalCond(node);
     }
 }
+/// end eval functions
 
+
+// prints the type and value of a RET_VAL
 void printRetVal(RET_VAL val) {
     switch (val.type) {
         case INT_TYPE:
@@ -1060,45 +1078,32 @@ void printRetVal(RET_VAL val) {
 }
 
 /**
-/// FREEEEEEEE SECTION
+/// FREE SECTION
 **/
 
 void freeFuncNode(AST_NODE *node) {
     if (!node) {
         return;
     }
+    free(node->data.function.id);
     freeNode(node->data.function.opList);
 }
 
-void freeSymNode(AST_NODE *node){
-    if (!node) {
-        return;
-    }
-    free(node->data.symbol.id);
-    freeNode(node->next);
-}
-
-void freeScopeNode(AST_NODE *node){
+void freeStackNode(STACK_NODE *node){
     if (!node){
         return;
     }
-    freeNode(node->data.scope.child);
-}
-
-void freeCond(AST_NODE *node){
-    if (!node){
-        return;
-    }
+    freeStackNode(node->next);
 }
 
 void freeStNode(SYMBOL_TABLE_NODE *stNode){
     if (!stNode){
         return;
     }
-
+    freeStNode(stNode->next);
     free(stNode->id);
     freeNode(stNode->value);
-    freeStNode(stNode->next);
+    freeStackNode(stNode->stack);
     free(stNode);
 }
 
@@ -1119,6 +1124,7 @@ void freeNode(AST_NODE *node) {
     // to free as well (but this should probably be done in
     // a call to another function, named something like
     // freeFunctionNode)
+    freeNode(node->next);
 
     if (node->symbolTable != NULL){
         freeStNode(node->symbolTable);
@@ -1134,8 +1140,12 @@ void freeNode(AST_NODE *node) {
         case SCOPE_NODE_TYPE:
             freeNode(node->data.scope.child);
             break;
+        case NUM_NODE_TYPE:
+            break;
+        case COND_TYPE:
+            freeFuncNode(node);
+            break;
     }
-    freeNode(node->next);
 
     // and, finally,
     free(node);

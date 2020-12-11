@@ -85,26 +85,13 @@ s_expr:
 f_expr:
     LPAREN FUNC s_expr_section RPAREN {
     	ylog(f_expr, LPAREN FUNC s_expr_section RPAREN);
-    	$$ = createFunctionNode($2, $3, NULL);
+    	//change the function to reflect this - DONE
+	$$ = createFunctionNode($2, $3, NULL);
     }
     | LPAREN SYMBOL s_expr_section RPAREN {
     	ylog(f_expr, LPAREN SYMBOL s_expr_section RPAREN);
-    	$$ = createFunctionNode(CUSTOM_FUNC, $3, $2);
-    };
-
-
-arg_list:
-    SYMBOL {
-    	ylog(arg_list, SYMBOL);
-    	$$ = $1;
-    }
-    | SYMBOL arg_list {
-    	ylog(arg_list, SYMBOL arg_list);
-	$$ = addToArgList($1, $2);
-    }
-    | {
-    	ylog(arg_list, empty);
-    	$$ = NULL;
+    	//change the function to reflect this - DONE
+	$$ = createFunctionNode(CUSTOM_FUNC, $3, $2);
     }
 
 
@@ -122,7 +109,7 @@ s_expr_section:
 s_expr_list:
     s_expr {
     	ylog(s_expr_list, s_expr);
-    	$$ = addExpressionToList($1, NULL);
+    	$$ = $1;
     }
     | s_expr s_expr_list {
     	ylog(s_expr_list, s_expr s_expr_list);
@@ -151,20 +138,36 @@ let_list:
 let_elem:
     LPAREN SYMBOL s_expr RPAREN {
     	ylog(let_elem, LPAREN SYMBOL s_expr RPAREN);
-    	$$ = createStNode(NO_TYPE, $2, $3, NULL);
+    	//going to have to change these too
+	$$ = createStNode(NO_TYPE, $2, $3, VAR_TYPE, NULL);
     }
     | LPAREN TYPE SYMBOL s_expr RPAREN {
         ylog(let_elem, LPAREN TYPE SYMBOL s_expr RPAREN);
-        $$ = createStNode($2, $3, $4, NULL);
+	$$ = createStNode($2, $3, $4, VAR_TYPE, NULL);
     }
     | LPAREN SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN {
     	ylog(let_elem, LPAREN SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN);
-    	$$ = createStNode(NO_TYPE, $2, $7, $5);
+    	$$ = createStNode(NO_TYPE, $2, $7, LAMBDA_TYPE, $5);
     }
     | LPAREN TYPE SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN {
-	ylog(let_elem, LPAREN TYPE SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN);
-	$$ = createStNode($2, $3, $8, $6);
+    	ylog(let_elem, LPAREN TYPE SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN);
+    	$$ = createStNode($2, $3, $8, LAMBDA_TYPE, $6);
     }
+
+    arg_list:
+        SYMBOL {
+        	ylog(arg_list, SYMBOL);
+        	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, NULL);
+        }
+        | SYMBOL arg_list {
+        	ylog(arg_list, SYMBOL arg_list);
+        	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, $2);
+        }
+        | {
+        	ylog(arg_list, <empty>);
+        	$$ = NULL;
+        }
+
 
 number:
     INT {

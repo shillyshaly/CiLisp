@@ -55,14 +55,13 @@ let {
     return LET;
 }
 
-cond {
-    llog(COND);
-    return COND;
-}
-
 lambda {
     llog(LAMBDA);
     return LAMBDA;
+}
+cond {
+    llog(COND);
+    return COND;
 }
 
 {type} {

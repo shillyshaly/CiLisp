@@ -55,6 +55,7 @@ typedef enum func_type {
     LESS_FUNC,
     GREATER_FUNC,
     PRINT_FUNC,
+    //task 5 function
     CUSTOM_FUNC
 } FUNC_TYPE;
 
@@ -67,7 +68,6 @@ typedef enum num_type {
     NO_TYPE
 } NUM_TYPE;
 
-
 typedef struct {
     NUM_TYPE type;
     double value;
@@ -75,9 +75,9 @@ typedef struct {
 
 typedef AST_NUMBER RET_VAL;
 
-
 typedef struct ast_function {
     FUNC_TYPE func;
+    char *id;
     struct ast_node *opList;
 } AST_FUNCTION;
 
@@ -91,14 +91,8 @@ typedef enum ast_node_type {
 
 typedef struct {
     char* id;
+    NUM_TYPE numType;
 } AST_SYMBOL;
-
-//TODO 5 - add symbol types - DONE
-typedef enum {
-    VAR_TYPE,
-    LAMBDA_TYPE,
-    ARG_TYPE
-}SYMBOL_TYPE;
 
 typedef struct {
     struct ast_node *child;
@@ -114,6 +108,7 @@ typedef struct ast_node {
     AST_NODE_TYPE type;
     struct ast_node *parent;
     struct symbol_table_node *symbolTable;
+    struct symbol_table_node *argList;
     union {
         AST_NUMBER number;
         AST_FUNCTION function;
@@ -124,55 +119,57 @@ typedef struct ast_node {
     struct ast_node *next;
 } AST_NODE;
 
-//TODO 5 - change to include extra arg stuff - DONE
- typedef struct symbol_table_node {
-     char *id;
-     AST_NODE *value;
-     NUM_TYPE type;
-     SYMBOL_TYPE symbolType;
-     struct stack_node *stack;
+typedef enum {
+    VAR_TYPE,
+    LAMBDA_TYPE,
+    ARG_TYPE
+} SYMBOL_TYPE;
+
+typedef struct symbol_table_node {
+    char *id;
+    AST_NODE *value;
+    SYMBOL_TYPE symbolType;
+    NUM_TYPE numType;
+    struct stack_node *stack;
     struct symbol_table_node *next;
 } SYMBOL_TABLE_NODE;
 
-//TODO 5 - create a stack node for vars - DONE
 typedef struct stack_node {
     RET_VAL value;
     struct stack_node *next;
-}STACK_NODE;
+} STACK_NODE;
 
-AST_NODE *createNumberNode(double value, NUM_TYPE type);
-//TODO - ???
-AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, SYMBOL_TABLE_NODE *stack);
-AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
-//need to add some functions for task2
-AST_NODE *createSymbolNode(char *id);
-AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child);
-AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond);
-//TODO - add stNode for task 5 to createStNode - ???
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE type, char *id, AST_NODE *value, SYMBOL_TABLE_NODE *arg_list);
-SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
-
-//TODO 5 - addto arglist,
-STACK_NODE *addToArgList(AST_NODE *arg, STACK_NODE *argList);
 
 NUM_TYPE resolveNumType(char *type);
 
+AST_NODE *createNumberNode(double value, NUM_TYPE type);
+AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, char *name);
+AST_NODE *createSymbolNode(char *id);
+AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child); //set symbol table
+AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond);
+STACK_NODE *createStackNode(RET_VAL value);
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist);
+
+
+///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
+SYMBOL_TABLE_NODE *resolveSymbolValue(AST_NODE *currScope, SYMBOL_TABLE_NODE *currNode, char *id);
+
+
+///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
+
+
+SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
+AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
+
+
 RET_VAL eval(AST_NODE *node);
-//add eval for symbol
 RET_VAL evalSymbolNode(AST_NODE *node);
 RET_VAL evalScopeNode(AST_NODE *node);
 RET_VAL evalCond(AST_NODE *node);
-//TODO - ADD eval for customFunc
-RET_VAL evalCustom(AST_NODE *node);
-
-//random shit
-STACK_NODE *createStackNode(RET_VAL value);
-STACK_NODE *addStackNodetoList(RET_VAL value, STACK_NODE *list);
 
 void printRetVal(RET_VAL val);
 
 void freeNode(AST_NODE *node);
 void freeStNode(SYMBOL_TABLE_NODE *node);
-//void freeSymNode(AST_FUNCTION *node);
-//void freeScopeNode(AST_NODE *node);
+
 #endif
