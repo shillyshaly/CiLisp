@@ -68,7 +68,7 @@ TASK 5:
 -broke a lot of functionality trying to fix things.  had to restart some parts.
 
 BUGS:
-+seg faults
++seg faults in scope node
 +so far, first line of task_5 causes seg fault.
 +now valgrind really blows up. now there is also a syscallParam.  maybe I need to malloc the buffer, then
     free it after?

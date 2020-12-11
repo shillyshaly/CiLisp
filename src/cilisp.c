@@ -208,8 +208,7 @@ AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *fals
     return result;
 }
 
-SYMBOL_TABLE_NODE *
-createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist) {//3
+SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist) {//3
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
 
