@@ -94,10 +94,10 @@ FUNC_TYPE resolveFunc(char *funcName) {//5
     return CUSTOM_FUNC;
 }
 
-NUM_TYPE resolveNumType(char *type){ //1
+NUM_TYPE resolveNumType(char *type) { //1
     if (strcmp(type, "int") == 0) {
         return INT_TYPE;
-    }else if(strcmp(type, "double") == 0) {
+    } else if (strcmp(type, "double") == 0) {
         return DOUBLE_TYPE;
     }
     return NO_TYPE;
@@ -143,7 +143,7 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, char *name) {//10
     node->data.function.id = name;
 //    node->parent = NULL;
 
-    while (opList){
+    while (opList) {
         opList->parent = node;
         opList = opList->next;
     }
@@ -153,7 +153,7 @@ AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, char *name) {//10
     return node;
 }
 
-AST_NODE *createSymbolNode(char *id){//6
+AST_NODE *createSymbolNode(char *id) {//6
     AST_NODE *node;
     size_t nodeSize;
 
@@ -165,14 +165,14 @@ AST_NODE *createSymbolNode(char *id){//6
     node->type = SYM_NODE_TYPE;
     node->data.symbol.id = id;
     node->data.symbol.numType = NO_TYPE;
-//    node->symbolTable = NULL;
-//    node->parent = NULL;
-//    node->next = NULL;
+    node->symbolTable = NULL;
+    node->parent = NULL;
+    node->next = NULL;
 
     return node;
 }
 
-AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
+AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child) {//11
     AST_NODE *node;
     size_t nodeSize;
 
@@ -186,12 +186,13 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     node->data.scope.child = child;
     child->parent = node;
 
-    if (stNode->symbolType == LAMBDA_TYPE){
+    if (stNode->symbolType == LAMBDA_TYPE) {
         child->argList = stNode;
-    }else {
+    } else {
         child->symbolTable = stNode;
     }
-    while (stNode){
+
+    while (stNode) {
         stNode->value->parent = child;
         stNode = stNode->next;
     }
@@ -199,7 +200,7 @@ AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child){//11
     return node;
 }
 
-AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond){
+AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond) {
     AST_NODE *result;
 
     result = (condition->data.number.value != 0) ? trueCond : falseCond;
@@ -207,7 +208,8 @@ AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *fals
     return result;
 }
 
-SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist) {//3
+SYMBOL_TABLE_NODE *
+createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist) {//3
     SYMBOL_TABLE_NODE *stNode;
     size_t nodeSize;
 
@@ -222,25 +224,25 @@ SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYM
     stNode->numType = numType;
     stNode->symbolType = symbolType;
 
-    if (numType == INT_TYPE && value->data.number.type == DOUBLE_TYPE){
+    if (numType == INT_TYPE && value->data.number.type == DOUBLE_TYPE) {
         warning("Precision loss on int cast from %f to %d.", value->data.number.value,
                 (int) value->data.number.value);
     }
 
-    if (stNode->value){
-        if (symbolType == LAMBDA_TYPE){
+    if (stNode->value) {
+        if (symbolType == LAMBDA_TYPE) {
             stNode->value->argList = arglist;
         }
-        if (stNode->value->type == SYM_NODE_TYPE){
+        if (stNode->value->type == SYM_NODE_TYPE) {
             stNode->value->symbolTable->numType = numType;
         }
     }
 
     stNode->stack = NULL;
 
-    if (arglist){
+    if (arglist) {
         stNode->next = arglist;
-    }else {
+    } else {
         stNode->next = NULL;
     }
 
@@ -255,10 +257,10 @@ SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE
 
     currNode = symTblList;
 
-    while (currNode){
+    while (currNode) {
 
-        if (strcmp(newExpr->id, currNode->id) == 0){
-            if (currNode == symTblList){
+        if (strcmp(newExpr->id, currNode->id) == 0) {
+            if (currNode == symTblList) {
                 symTblList = symTblList->next;
                 freeStNode(currNode);
             } else {
@@ -286,45 +288,50 @@ AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList) {//8//9
 /*
  * no arguments
  **/
-RET_VAL evalRand(){
+RET_VAL evalRand() {
     RET_VAL result;
 
-    result.value = (rand() + 1.0) / (RAND_MAX+2.0);
+    result.value = (double) (rand()) / (double) (RAND_MAX);
 
     return result;
 }
 
-RET_VAL evalRead(){
+RET_VAL evalRead() {
     RET_VAL result;
     int size = 12;
     char buff[size];
 
     printf("read :: ");
-    if (read_target != stdin){
+    if (read_target != stdin) {
     }
     fgets(buff, size, read_target);
 
     bool isDub = false;
     for (int i = 0; i < strlen(buff); i++) {
-        if (isalpha(buff[i])){
+        if (buff[0] == '.') {
             warning("Invalid read entry! NAN returned!");
             return NAN_RET_VAL;
         }
-        if (buff[i] == '.'){
+        if (isalpha(buff[i])) {
+            warning("Invalid read entry! NAN returned!");
+            return NAN_RET_VAL;
+        }
+        if (buff[i] == '.') {
             isDub = true;
         }
     }
 
-    if (isDub){
+    if (isDub) {
         result.type = DOUBLE_TYPE;
         result.value = strtod(buff, NULL);
-    } else{
+    } else {
         result.type = INT_TYPE;
         result.value = strtod(buff, NULL);
     }
 
     return result;
 }
+
 /*
  * unary functions
  **/
@@ -339,7 +346,7 @@ RET_VAL evalNeg(AST_NODE *op) {
 
     result = eval(op);
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in neg.  Ignoring the rest.");
     }
 
@@ -359,7 +366,7 @@ RET_VAL evalAbs(AST_NODE *op) {
 
     result = eval(op);
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in abs.  Ignoring the rest.");
     }
 
@@ -380,7 +387,7 @@ RET_VAL evalExp(AST_NODE *op) {
     result = eval(op);
     result.type = DOUBLE_TYPE;
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in exp.  Ignoring the rest.");
     }
 
@@ -400,10 +407,10 @@ RET_VAL evalExp2(AST_NODE *op) {
 
     result = eval(op);
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in exp2.  Ignoring the rest.");
     }
-    if (op->data.number.value < 0){
+    if (op->data.number.value < 0) {
         result.type = DOUBLE_TYPE;
     }
 
@@ -424,7 +431,7 @@ RET_VAL evalLog(AST_NODE *op) {
     result = eval(op);
     result.type = DOUBLE_TYPE;
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in log.  Ignoring the rest.");
     }
 
@@ -445,7 +452,7 @@ RET_VAL evalSqrt(AST_NODE *op) {
     result = eval(op);
     result.type = DOUBLE_TYPE;
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in sqrt.  Ignoring the rest.");
     }
 
@@ -466,7 +473,7 @@ RET_VAL evalCbrt(AST_NODE *op) {
     result = eval(op);
     result.type = DOUBLE_TYPE;
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in cbrt.  Ignoring the rest.");
     }
 
@@ -475,7 +482,7 @@ RET_VAL evalCbrt(AST_NODE *op) {
     return result;
 }
 
-RET_VAL evalPrint(AST_NODE *op){
+RET_VAL evalPrint(AST_NODE *op) {
     RET_VAL result;
 
     if (op == NULL) {
@@ -486,7 +493,7 @@ RET_VAL evalPrint(AST_NODE *op){
 
     result = eval(op);
 
-    if (op->next != NULL){
+    if (op->next != NULL) {
         warning("Too many arguments in neg.  Ignoring the rest.");
     }
 
@@ -494,6 +501,7 @@ RET_VAL evalPrint(AST_NODE *op){
 
     return result;
 }
+
 /*
  * binary functions
  **/
@@ -510,14 +518,14 @@ RET_VAL evalSub(AST_NODE *op) {
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments.  Ignoring the rest.");
     }
 
 
     result2 = eval(op);
     result2.value = result.value - result2.value;
-    if (result.type == DOUBLE_TYPE || result2.type == DOUBLE_TYPE){
+    if (result.type == DOUBLE_TYPE || result2.type == DOUBLE_TYPE) {
         result2.type = DOUBLE_TYPE;
     }
 
@@ -538,15 +546,15 @@ RET_VAL evalDiv(AST_NODE *op) {
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments div.  Ignoring the rest.");
     }
 
     result2 = eval(op);
 
-    if (result.type == INT_TYPE && result2.type == INT_TYPE){
-        result.value = (int)(result.value / result2.value);
-    }else{
+    if (result.type == INT_TYPE && result2.type == INT_TYPE) {
+        result.value = (int) (result.value / result2.value);
+    } else {
         result.value = result.value / result2.value;
         result.type = DOUBLE_TYPE;
     }
@@ -568,13 +576,13 @@ RET_VAL evalRem(AST_NODE *op) {
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments in rem.  Ignoring the rest.");
     }
 
     result2 = eval(op);
     result.value = fmod(result.value, result2.value);
-    if (result.value < 0){
+    if (result.value < 0) {
         result.value = fabs(result2.value) + result.value;
     }
 
@@ -594,7 +602,7 @@ RET_VAL evalPow(AST_NODE *op) {
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments in pow.  Ignoring the rest.");
     }
 
@@ -604,7 +612,7 @@ RET_VAL evalPow(AST_NODE *op) {
     return result;
 }
 
-RET_VAL evalEqual(AST_NODE *op){
+RET_VAL evalEqual(AST_NODE *op) {
     //check for binary
     RET_VAL result;
     RET_VAL result2;
@@ -619,7 +627,7 @@ RET_VAL evalEqual(AST_NODE *op){
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments.  Ignoring the rest.");
     }
     result2 = eval(op);
@@ -630,7 +638,7 @@ RET_VAL evalEqual(AST_NODE *op){
         result.value = output;
     }
         //else
-    else{
+    else {
         //return 0
         output = 0;
         result.value = output;
@@ -639,7 +647,7 @@ RET_VAL evalEqual(AST_NODE *op){
     return result;
 }
 
-RET_VAL evalLess(AST_NODE *op){
+RET_VAL evalLess(AST_NODE *op) {
     //check for binary
     RET_VAL result;
     RET_VAL result2;
@@ -654,7 +662,7 @@ RET_VAL evalLess(AST_NODE *op){
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments.  Ignoring the rest.");
     }
     result2 = eval(op);
@@ -665,7 +673,7 @@ RET_VAL evalLess(AST_NODE *op){
         result.value = output;
     }
         //else
-    else{
+    else {
         //return 0
         output = 0;
         result.value = output;
@@ -674,7 +682,7 @@ RET_VAL evalLess(AST_NODE *op){
     return result;
 }
 
-RET_VAL evalGreater(AST_NODE *op){
+RET_VAL evalGreater(AST_NODE *op) {
     //check for binary
     RET_VAL result;
     RET_VAL result2;
@@ -689,7 +697,7 @@ RET_VAL evalGreater(AST_NODE *op){
     result = eval(op);
     op = op->next;
 
-    if (op->next){
+    if (op->next) {
         warning("Too many arguments.  Ignoring the rest.");
     }
     result2 = eval(op);
@@ -700,7 +708,7 @@ RET_VAL evalGreater(AST_NODE *op){
         result.value = output;
     }
         //else
-    else{
+    else {
         //return 0
         output = 0;
         result.value = output;
@@ -708,6 +716,7 @@ RET_VAL evalGreater(AST_NODE *op){
 
     return result;
 }
+
 /*
  * n-ary functions
  **/
@@ -727,7 +736,7 @@ RET_VAL evalAdd(AST_NODE *op) {
         result2 = eval(op);
         result.value = result.value + result2.value;
 
-        if (result2.type == DOUBLE_TYPE){
+        if (result2.type == DOUBLE_TYPE) {
             result.type = DOUBLE_TYPE;
         }
 
@@ -753,7 +762,7 @@ RET_VAL evalMult(AST_NODE *op) {
         result2 = eval(op);
         result.value = result.value * result2.value;
 
-        if (result2.type == DOUBLE_TYPE){
+        if (result2.type == DOUBLE_TYPE) {
             result.type = DOUBLE_TYPE;
         }
 
@@ -837,8 +846,8 @@ RET_VAL evalMin(AST_NODE *op) {
 
 ///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
 
-//TODO 5 - create stack node function for lambdas - DONE
-STACK_NODE *createStackNode(RET_VAL value) {
+//TODO 5 - create stack node function
+STACK_NODE *createStackNode(RET_VAL value, STACK_NODE *list) {
     STACK_NODE *node;
     size_t nodeSize;
 
@@ -847,46 +856,51 @@ STACK_NODE *createStackNode(RET_VAL value) {
         yyerror("Memory allocation failed!");
         exit(1);
     }
+    node->next = list;
     node->value = value;
-    node->next = NULL;
 
     return node;
 }
 
-//SYMBOL_TABLE_NODE *resolveSymbolValue(AST_NODE *currScope, SYMBOL_TABLE_NODE *currNode, char *id) {
-//    SYMBOL_TABLE_NODE *symbol = NULL;
-//
-//    if (currNode != NULL) {
-//        if (strcmp(currNode->id, id) == 0) {
-//            symbol = currNode;
-//        } else {
-//            if (currNode->next != NULL) {
-//                symbol = resolveSymbolValue(currScope, currNode->next, id);
-//            }
-//            else if (currScope != NULL && currScope->parent != NULL) {
-//                symbol = resolveSymbolValue(currScope->parent, currScope->parent->symbolTable, id);
-//            }
-//            else {
-//                yyerror("Undefined symbol!");
-//            }
-//        }
-//    }
-////    else {
-////        //for when symbol table is empty but symbol exists in higher scope
-////        if (currScope != NULL && currScope->parent != NULL)
-////            symbol = resolveSymbolValue(currScope->parent, currScope->parent->symbolTable, id);
-////        else
-////            yyerror("Undefined symbol!");
-////    }
-//
-//    return symbol;
-//}
-
 //TODO - make evalCutom function
-RET_VAL evalCustom(AST_NODE *node){
+RET_VAL evalCustom(AST_NODE *op) {
+    AST_NODE *opList = op->data.function.opList;
+    RET_VAL result;
 
+    if (opList == NULL) {
+        warning("custom called with no operands.");
+        return NAN_RET_VAL;
+    }
 
-    return NAN_RET_VAL;
+    SYMBOL_TABLE_NODE *symbolTableNode;
+    if (op->symbolTable) {
+        symbolTableNode = op->symbolTable;
+        result = eval(op->symbolTable->value);
+    } else {
+        symbolTableNode = op->argList->value->symbolTable;
+        result = eval(op->argList->value);
+    }
+
+    RET_VAL op1 = eval(opList);
+    opList = opList->next;
+    RET_VAL op2 = eval(opList);
+
+    STACK_NODE *stackNode = createStackNode(op1, op->argList->stack);
+    stackNode = createStackNode(op2, op->argList->stack);
+
+    while (symbolTableNode) {
+        symbolTableNode->stack = stackNode;
+        symbolTableNode = symbolTableNode->next;
+    }
+
+    if (op->argList->numType != NO_TYPE) {
+        if (op->argList->numType != INT_TYPE) {
+            warning("precision lost");
+        }
+        result.type = op->argList->numType;
+    }
+    return result;
+
 }
 
 
@@ -973,7 +987,7 @@ RET_VAL evalNumNode(AST_NODE *node) {
     return result;
 }
 
-RET_VAL evalSymbolNode(AST_NODE *node){//16
+RET_VAL evalSymbolNode(AST_NODE *node) {//16
     AST_NODE *currScope;
     SYMBOL_TABLE_NODE *stNode;
 
@@ -983,28 +997,22 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
     }
     currScope = node;
 
-    while (currScope){
+    while (currScope) {
 
         stNode = currScope->symbolTable;
 
-        while (stNode){
+        while (stNode) {
 
-            if (strcmp(stNode->id, node->data.symbol.id) == 0){
+            if (strcmp(stNode->id, node->data.symbol.id) == 0) {
                 RET_VAL result = eval(stNode->value);
 
-                if (stNode->numType == INT_TYPE){
+                if (stNode->numType == INT_TYPE) {
                     result.type = INT_TYPE;
-                }
-                if(stNode->numType == DOUBLE_TYPE){
+                } else if (stNode->numType == DOUBLE_TYPE) {
                     result.type = DOUBLE_TYPE;
                 }
-                if (stNode->symbolType == VAR_TYPE){
-                    result = eval(stNode->value);
-                }
-                if (stNode->symbolType == ARG_TYPE){
-                    result = stNode->stack->value;
-                }
-                if (stNode->value->type != NUM_NODE_TYPE){
+
+                if (stNode->value->type != NUM_NODE_TYPE) {
                     freeNode(stNode->value);
                     stNode->value = createNumberNode(result.value, result.type);
                 }
@@ -1018,7 +1026,7 @@ RET_VAL evalSymbolNode(AST_NODE *node){//16
     return NAN_RET_VAL;
 }
 
-RET_VAL evalScopeNode(AST_NODE *node){//13
+RET_VAL evalScopeNode(AST_NODE *node) {//13
     if (!node) {
         yyerror("NULL ast node passed into evalScopeNode!");
         return NAN_RET_VAL;
@@ -1026,7 +1034,7 @@ RET_VAL evalScopeNode(AST_NODE *node){//13
     return eval(node->data.scope.child);
 }
 
-RET_VAL evalCond(AST_NODE *node){
+RET_VAL evalCond(AST_NODE *node) {
     if (!node) {
         yyerror("NULL ast node passed into evalScopeNode!");
         return NAN_RET_VAL;
@@ -1089,15 +1097,15 @@ void freeFuncNode(AST_NODE *node) {
     freeNode(node->data.function.opList);
 }
 
-void freeStackNode(STACK_NODE *node){
-    if (!node){
+void freeStackNode(STACK_NODE *node) {
+    if (!node) {
         return;
     }
     freeStackNode(node->next);
 }
 
-void freeStNode(SYMBOL_TABLE_NODE *stNode){
-    if (!stNode){
+void freeStNode(SYMBOL_TABLE_NODE *stNode) {
+    if (!stNode) {
         return;
     }
     freeStNode(stNode->next);
@@ -1126,7 +1134,7 @@ void freeNode(AST_NODE *node) {
     // freeFunctionNode)
     freeNode(node->next);
 
-    if (node->symbolTable != NULL){
+    if (node->symbolTable != NULL) {
         freeStNode(node->symbolTable);
     }
 

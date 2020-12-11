@@ -154,19 +154,19 @@ let_elem:
     	$$ = createStNode($2, $3, $8, LAMBDA_TYPE, $6);
     }
 
-    arg_list:
-        SYMBOL {
-        	ylog(arg_list, SYMBOL);
-        	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, NULL);
-        }
-        | SYMBOL arg_list {
-        	ylog(arg_list, SYMBOL arg_list);
-        	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, $2);
-        }
-        | {
-        	ylog(arg_list, <empty>);
-        	$$ = NULL;
-        }
+arg_list:
+    SYMBOL {
+     	ylog(arg_list, SYMBOL);
+       	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, NULL);
+    }
+    | SYMBOL arg_list {
+       	ylog(arg_list, SYMBOL arg_list);
+       	$$ = createStNode(DOUBLE_TYPE, $1, NULL, ARG_TYPE, $2);
+    }
+    | {
+       	ylog(arg_list, <empty>);
+       	$$ = NULL;
+    };
 
 
 number:

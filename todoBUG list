@@ -31,14 +31,44 @@ BUGS:
 +remainder is incorrect, divide returns wrong number, sub is incorrect
     not sure with division, if i have to make if statement based on type for int division
     remainder is not returning correct
-    --sub is fine
+    --fixed
 +fix memory leaks
+
+*** check1 seems to work, valgrind isn't showing anything for check1.
 
 TASK 2:
 +start everything.....
 +finish .l and .y additions and debug
+    --finished .l and .y
+
+BUGS:
++still have to find the cause of the seg fault from certain inputs EX:( (let (a 1) (b a)) ((let (a 2)) b ) )
++without these inputs valgrind works, but it segfaults with the ex.
 
 TASK 3:
 -add grammar additions
 -expand SYMBOL_TABLE_NODE to include a type field (storing a NUM_TYPE).
 -expand the NUM_TYPE enum to include a NO_TYPE element
+
+*** the short check seems to work.  valgrind doesn't show anything for task_3.
+
+TASK 4:
+-not sure if read is working right.  output shows read :: <type>. And I don't know if it is storing the words
+    the way it should be.
+BUGS:
++certain inputs for let statements cause a seg fault.
++(cond (less 0 1) 5 6) ins't returning the correct output
++valgrind blows up. 1 leak lost and A LOT of warnings.
+
+TASK 5:
+-make premade changes from docs
+-change grammar for .l and .y
+-change function parameters.
+-add functions
+-broke a lot of functionality trying to fix things.  had to restart some parts.
+
+BUGS:
++seg faults
++so far, first line of task_5 causes seg fault.
++now valgrind really blows up. now there is also a syscallParam.  maybe I need to malloc the buffer, then
+    free it after?

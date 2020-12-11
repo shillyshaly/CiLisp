@@ -20,14 +20,17 @@
 
 
 #define BISON_FLEX_LOG_PATH "../src/bison-flex-output/bison_flex_log"
-FILE* read_target;
-FILE* flex_bison_log_file;
+FILE *read_target;
+FILE *flex_bison_log_file;
 
 
 int yyparse(void);
+
 int yylex(void);
+
 void yyerror(char *, ...);
-void warning(char*, ...);
+
+void warning(char *, ...);
 
 
 typedef enum func_type {
@@ -90,7 +93,7 @@ typedef enum ast_node_type {
 } AST_NODE_TYPE;
 
 typedef struct {
-    char* id;
+    char *id;
     NUM_TYPE numType;
 } AST_SYMBOL;
 
@@ -143,33 +146,42 @@ typedef struct stack_node {
 NUM_TYPE resolveNumType(char *type);
 
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
+
 AST_NODE *createFunctionNode(FUNC_TYPE func, AST_NODE *opList, char *name);
+
 AST_NODE *createSymbolNode(char *id);
-AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child); //set symbol table
+
+AST_NODE *createScopeNode(SYMBOL_TABLE_NODE *stNode, AST_NODE *child);
+
 AST_NODE *createCondNode(AST_NODE *condition, AST_NODE *trueCond, AST_NODE *falseCond);
-STACK_NODE *createStackNode(RET_VAL value);
+
 SYMBOL_TABLE_NODE *createStNode(NUM_TYPE numType, char *id, AST_NODE *value, SYMBOL_TYPE symbolType, SYMBOL_TABLE_NODE *arglist);
 
 
 ///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
-SYMBOL_TABLE_NODE *resolveSymbolValue(AST_NODE *currScope, SYMBOL_TABLE_NODE *currNode, char *id);
-
+STACK_NODE *createStackNode(RET_VAL value, STACK_NODE *stackNode);
 
 ///TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA TEST AREA
 
 
 SYMBOL_TABLE_NODE *addSymbolToList(SYMBOL_TABLE_NODE *newExpr, SYMBOL_TABLE_NODE *symTblList);
+
 AST_NODE *addExpressionToList(AST_NODE *newExpr, AST_NODE *exprList);
 
 
 RET_VAL eval(AST_NODE *node);
+
 RET_VAL evalSymbolNode(AST_NODE *node);
+
 RET_VAL evalScopeNode(AST_NODE *node);
+
 RET_VAL evalCond(AST_NODE *node);
+
 
 void printRetVal(RET_VAL val);
 
 void freeNode(AST_NODE *node);
+
 void freeStNode(SYMBOL_TABLE_NODE *node);
 
 #endif
